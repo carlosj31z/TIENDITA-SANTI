@@ -152,7 +152,7 @@
             padding: 1rem;
         }
 
-        /* ── MASCOTA PNG CONTAINER (SOLO MÓVIL) ── */
+        /* ── MASCOTA PNG CONTAINER (SIN MARCOS EN MÓVIL) ── */
         .mobile-mascot-box {
             display: flex;
             flex-direction: column;
@@ -162,11 +162,11 @@
             width: 100%;
             max-width: 320px;
             margin: 1.5rem auto 0;
-            background: #ffffff;
-            padding: 1rem;
-            border-radius: 1.25rem;
-            box-shadow: 0 4px 20px rgba(168, 85, 247, 0.15);
-            border: 2px solid #e8dff4;
+            background: transparent;
+            padding: 0;
+            border-radius: 0;
+            box-shadow: none;
+            border: none;
             transition: transform 0.2s ease;
         }
 
@@ -195,6 +195,9 @@
             height: 220px;
             object-fit: contain;
             display: block;
+            background: transparent;
+            border: none;
+            box-shadow: none;
         }
 
         @media (min-width: 1024px) {
@@ -656,7 +659,7 @@
                 <p class="msg-loading">Cargando el carrito de antojos...</p>
             </div>
 
-            <!-- IMAGEN PNG VISIBLE SOLO EN MÓVIL CON JUEGO DE PIZZAS -->
+            <!-- IMAGEN PNG VISIBLE SOLO EN MÓVIL (SIN MARCOS) -->
             <div class="mobile-mascot-box" id="zona-pizza">
                 <div class="mascot-header">🍕 ¡Juega conmigo! 🍕</div>
                 <img src="https://i.ibb.co/t5LD1t9/Gemini-Generated-Image-288sif288sif288s-1.png" alt="Gemini-Generated-Image-288sif288sif288s-1" border="0">
