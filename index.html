@@ -7,6 +7,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Boogaloo&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- LIBRERÍA SPLINE (Mascota 3D - Solo carga en escritorio) -->
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.12.98/build/spline-viewer.js"></script>
 
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -149,8 +152,8 @@
             padding: 1rem;
         }
 
-        /* ── MASCOTA PNG CONTAINER (VISIBLE EN MÓVIL Y PC) ── */
-        .mascot-png-container {
+        /* ── MASCOTA PNG CONTAINER (SOLO MÓVIL) ── */
+        .mobile-mascot-box {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -158,7 +161,7 @@
             cursor: pointer;
             width: 100%;
             max-width: 320px;
-            margin: 1rem auto 0;
+            margin: 1.5rem auto 0;
             background: #ffffff;
             padding: 1rem;
             border-radius: 1.25rem;
@@ -167,7 +170,7 @@
             transition: transform 0.2s ease;
         }
 
-        .mascot-png-container:active {
+        .mobile-mascot-box:active {
             transform: scale(0.97);
         }
 
@@ -187,10 +190,31 @@
             display: inline-block;
         }
 
-        .mascot-png-container img {
+        .mobile-mascot-box img {
             width: 100%;
             height: 220px;
             object-fit: contain;
+            display: block;
+        }
+
+        @media (min-width: 1024px) {
+            .mobile-mascot-box {
+                display: none;
+            }
+        }
+
+        /* ── MASCOTA 3D CONTAINER (SOLO PC) ── */
+        .mascot-3d-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            cursor: pointer;
+        }
+
+        spline-viewer {
+            width: 100%;
+            flex: 1;
             display: block;
         }
 
@@ -229,14 +253,13 @@
                 margin: 0;
                 padding-top: 0;
             }
-            .mascot-png-container {
+            .mascot-3d-container {
+                display: flex;
                 position: sticky;
                 top: 120px; 
-                width: 360px;
+                width: 400px;
+                height: 500px; 
                 margin: 0;
-            }
-            .mascot-png-container img {
-                height: 280px;
             }
         }
 
@@ -632,11 +655,18 @@
             <div id="tienda-container">
                 <p class="msg-loading">Cargando el carrito de antojos...</p>
             </div>
+
+            <!-- IMAGEN PNG VISIBLE SOLO EN MÓVIL CON JUEGO DE PIZZAS -->
+            <div class="mobile-mascot-box" id="zona-pizza">
+                <div class="mascot-header">🍕 ¡Juega conmigo! 🍕</div>
+                <img src="https://i.ibb.co/t5LD1t9/Gemini-Generated-Image-288sif288sif288s-1.png" alt="Gemini-Generated-Image-288sif288sif288s-1" border="0">
+            </div>
         </main>
 
-        <aside class="mascot-png-container" id="zona-velitas">
-            <div class="mascot-header">🍕 ¡Juega conmigo! 🍕</div>
-            <img src="https://ibb.co/bnbXGZk" alt="Mascota Pizza">
+        <!-- 3D VIEWER VISIBLE SOLO EN PC -->
+        <aside class="mascot-3d-container" id="zona-velitas">
+            <div class="mascot-header">✨ ¡Juega conmigo! ✨</div>
+            <spline-viewer url="https://prod.spline.design/eHd4R46Xychllw19/scene.splinecode"></spline-viewer>
         </aside>
     </div>
 
@@ -796,9 +826,8 @@
         }
 
         let contadorPizzas = 0;
-        const zonaVelitas = document.getElementById('zona-velitas');
-
-        zonaVelitas.addEventListener('pointerdown', (e) => {
+        
+        function registrarClickPizza(e) {
             contadorPizzas++;
             const popup = document.createElement('div');
             popup.className = 'vela-flotante';
@@ -808,7 +837,10 @@
             popup.style.top = `${e.clientY}px`;
             document.body.appendChild(popup);
             setTimeout(() => popup.remove(), 1800);
-        });
+        }
+
+        document.getElementById('zona-pizza').addEventListener('pointerdown', registrarClickPizza);
+        document.getElementById('zona-velitas').addEventListener('pointerdown', registrarClickPizza);
 
         document.getElementById('buscador').addEventListener('input', function(e) {
             const term = e.target.value.toLowerCase();
