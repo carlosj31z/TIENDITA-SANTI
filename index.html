@@ -7,6 +7,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Boogaloo&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- LIBRERÍA SPLINE (Mascota 3D) -->
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.12.98/build/spline-viewer.js"></script>
+
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -43,14 +47,8 @@
             text-align: center;
             background: linear-gradient(
                 135deg,
-                #3d00b7 0%,
-                #7b00e0 18%,
-                #bb00ff 34%,
-                #e0009a 50%,
-                #ff0073 62%,
-                #00c8ff 78%,
-                #a800ff 90%,
-                #3d00b7 100%
+                #3d00b7 0%, #7b00e0 18%, #bb00ff 34%, #e0009a 50%,
+                #ff0073 62%, #00c8ff 78%, #a800ff 90%, #3d00b7 100%
             );
             background-size: 350% 350%;
             animation: headerFlow 7s ease infinite;
@@ -129,11 +127,102 @@
             margin-bottom: 1rem;
         }
 
-        /* ── MAIN ── */
+        /* ── NUEVO LAYOUT (Escritorio vs Móvil) ── */
+        .layout-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
         main {
             max-width: 600px;
+            width: 100%;
             margin: 0 auto;
             padding: 1rem;
+        }
+
+        /* ── MASCOTA 3D CONTAINER ── */
+        .mascot-3d-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            height: 350px;
+            background: rgba(255, 255, 255, 0.4);
+            border: 2px solid #ffffff;
+            border-radius: 1.25rem;
+            box-shadow: 0 8px 32px rgba(168, 85, 247, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            cursor: pointer; /* Cambia el cursor para invitar a hacer clic */
+        }
+
+        .mascot-header {
+            background: linear-gradient(90deg, #7c3aed, #ec4899);
+            color: white;
+            text-align: center;
+            padding: 0.5rem;
+            font-weight: 900;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            z-index: 10;
+        }
+
+        /* Estilos del visor Spline */
+        spline-viewer {
+            width: 100%;
+            flex: 1;
+            display: block;
+        }
+
+        /* ── ANIMACIÓN DE VELITAS FLOTANTES ── */
+        .vela-flotante {
+            position: fixed;
+            pointer-events: none; /* Para que no interfiera con otros clics */
+            color: #FFD700; /* Color dorado */
+            font-family: 'Nunito', sans-serif;
+            font-weight: 900;
+            font-size: 1.3rem;
+            text-shadow: 
+                0 2px 4px rgba(0,0,0,0.4), 
+                0 0 12px rgba(255, 215, 0, 0.9),
+                0 0 20px rgba(255, 140, 0, 0.8);
+            z-index: 9999;
+            animation: subirVela 1.8s ease-out forwards;
+            white-space: nowrap;
+        }
+
+        @keyframes subirVela {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            15% { transform: translate(-50%, -100%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -350%) scale(0.9); opacity: 0; }
+        }
+
+        /* Media Query para Escritorio (Versión WEB) */
+        @media (min-width: 1024px) {
+            .layout-wrapper {
+                flex-direction: row;
+                align-items: flex-start;
+                justify-content: center;
+                padding-top: 1.5rem;
+            }
+            main {
+                margin: 0;
+                padding-top: 0;
+            }
+            .mascot-3d-container {
+                position: sticky;
+                top: 120px; 
+                width: 400px;
+                height: 500px; 
+                margin: 0;
+            }
         }
 
         /* ── SEARCH & TOOLS ── */
@@ -226,7 +315,7 @@
             min-height: 10.5rem;
             transition: transform 0.15s ease, box-shadow 0.15s ease;
             position: relative;
-            text-decoration: none; /* Evita subrayados si se usa estructura clickeable */
+            text-decoration: none; 
         }
 
         .card:active { transform: scale(0.95); }
@@ -260,7 +349,6 @@
             cursor: not-allowed;
         }
 
-        /* HIGHLIGHT CRÍTICO PARA EL HIGHLIGHT DE RULETA */
         .card-highlight {
             animation: highlightFlash 0.5s ease 3 alternate;
             border: 2.5px solid #06b6d4 !important;
@@ -344,7 +432,6 @@
             color: var(--purple);
         }
 
-        /* Stock crítico peligro de agotarse */
         .stock-urgente {
             color: #ef4444 !important;
             animation: textBlink 1s infinite;
@@ -501,14 +588,14 @@
 
         @keyframes bubblePop {
             0%, 100% { transform: translateX(-50%) scale(1); }
-            50%       { transform: translateX(-50%) scale(1.07); }
+            50%        { transform: translateX(-50%) scale(1.07); }
         }
 
         .delivery-mascot:hover img { animation: wiggle 0.4s ease infinite; }
 
         @keyframes wiggle {
             0%, 100% { transform: var(--dir, scaleX(1)) rotate(-6deg); }
-            50%       { transform: var(--dir, scaleX(1)) rotate(6deg); }
+            50%        { transform: var(--dir, scaleX(1)) rotate(6deg); }
         }
 
         /* PARTY CONFETTI */
@@ -529,7 +616,7 @@
 </head>
 <body>
 
-    <!-- MASCOTA FLOTANTE -->
+    <!-- MASCOTA FLOTANTE DELIVERY -->
     <div class="delivery-mascot" title="¡Hacemos delivery!" onclick="celebrarDelivery(this)">
         <div class="delivery-bubble">🛵 ¡Hacemos delivery!</div>
         <img src="https://i.pinimg.com/originals/b3/19/9c/b3199c4fe56fc8a60be65d7a72579815.gif" alt="Delivery disponible">
@@ -540,63 +627,70 @@
         <p>Stock de la oficina &mdash; en tiempo real</p>
     </header>
 
-    <main>
+    <!-- WRAPPER PARA EL LAYOUT DE ESCRITORIO -->
+    <div class="layout-wrapper">
+        
+        <main>
+            <!-- CONTADORES Y FRASES DE OFICINA -->
+            <div class="live-stats">
+                <span class="pulse-dot"></span>
+                <span id="live-count">4</span> personas de la oficina están revisando el stock ahora mismo... ¡Que no te lo ganen!
+            </div>
 
-        <!-- CONTADORES Y FRASES DE OFICINA -->
-        <div class="live-stats">
-            <span class="pulse-dot"></span>
-            <span id="live-count">4</span> personas de la oficina están revisando el stock ahora mismo... ¡Que no te lo ganen!
-        </div>
+            <div class="office-quote" id="random-quote">
+                "¿Estresado por sacar adelante ese pendiente? ¿Reuniones sin fin? El dulce cura el alma."
+            </div>
 
-        <div class="office-quote" id="random-quote">
-            "¿Estresado por sacar adelante ese pendiente? ¿Reuniones sin fin? El dulce cura el alma."
-        </div>
-
-        <div class="payment-banner">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Icono_de_la_aplicaci%C3%B3n_Yape.png" alt="Medios de pago aceptados" class="payment-photo">
-            <div class="payment-info">
-                <div class="payment-title">Medios de pago aceptados</div>
-                <div class="payment-methods">
-                    <div class="payment-method">
-                        <div class="payment-icon icon-cash">$</div>
-                        <span>Efectivo</span>
+            <div class="payment-banner">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Icono_de_la_aplicaci%C3%B3n_Yape.png" alt="Medios de pago aceptados" class="payment-photo">
+                <div class="payment-info">
+                    <div class="payment-title">Medios de pago aceptados</div>
+                    <div class="payment-methods">
+                        <div class="payment-method">
+                            <div class="payment-icon icon-cash">$</div>
+                            <span>Efectivo</span>
+                        </div>
+                        <div class="payment-method">
+                            <div class="payment-icon icon-yape">Y</div>
+                            <span>Yape</span>
+                        </div>
                     </div>
-                    <div class="payment-method">
-                        <div class="payment-icon icon-yape">Y</div>
-                        <span>Yape</span>
-                    </div>
+                    <div class="payment-note">¡Paga como prefieras!</div>
                 </div>
-                <div class="payment-note">¡Paga como prefieras!</div>
             </div>
-        </div>
 
-        <!-- BUSCADOR CON EL BOTÓN RULETA -->
-        <div class="search-wrap">
-            <div class="search-row">
-                <input
-                    type="text"
-                    id="buscador"
-                    placeholder="Busca tu antojo favorito..."
-                    autocomplete="off"
-                    spellcheck="false"
-                >
-                <button class="btn-random" onclick="elegirAlAzar()">🎲 Sorpréndeme</button>
+            <!-- BUSCADOR CON EL BOTÓN RULETA -->
+            <div class="search-wrap">
+                <div class="search-row">
+                    <input
+                        type="text"
+                        id="buscador"
+                        placeholder="Busca tu antojo favorito..."
+                        autocomplete="off"
+                        spellcheck="false"
+                    >
+                    <button class="btn-random" onclick="elegirAlAzar()">🎲 Sorpréndeme</button>
+                </div>
             </div>
-        </div>
 
-        <span id="ultimo-update"></span>
+            <span id="ultimo-update"></span>
 
-        <!-- CONTENEDOR DE PRODUCTOS -->
-        <div id="tienda-container">
-            <p class="msg-loading">Cargando el carrito de antojos...</p>
-        </div>
+            <!-- CONTENEDOR DE PRODUCTOS -->
+            <div id="tienda-container">
+                <p class="msg-loading">Cargando el carrito de antojos...</p>
+            </div>
+        </main>
 
-    </main>
+        <!-- SECCIÓN DE MASCOTA 3D INTERACTIVA (AHORA CON MILAGRITOS) -->
+        <aside class="mascot-3d-container" id="zona-velitas">
+            <div class="mascot-header">✨ ¡Juega conmigo! ✨</div>
+            <spline-viewer url="https://prod.spline.design/eHd4R46Xychllw19/scene.splinecode"></spline-viewer>
+        </aside>
+
+    </div> <!-- FIN DEL LAYOUT WRAPPER -->
 
     <script>
         const SPREADSHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRLe8TRDdLCgjXBQf5jL3jN1e_CugqqcyFRxT9VO-uyKL05-avxObnclS809ZzMM6imAVWkN_rfkmTT/pub?output=csv";
-        
-        // 🚨 CONFIGURACIÓN: CAMBIA ESTE NÚMERO POR EL DEL DELIVERY (Usa código de país, Ej: 51 para Perú)
         const TELEFONO_DELIVERY = "51972898388"; 
 
         let productos = [];
@@ -665,16 +759,14 @@
                 const agotado = prod.stock <= 0;
                 const pocoStock = prod.stock > 0 && prod.stock <= 3;
                 
-                // Si está disponible, creamos la tarjeta como un enlace a WhatsApp
                 const card = document.createElement(agotado ? 'div' : 'a');
                 card.className = "card " + (agotado ? "card-agotado" : "card-disponible");
                 card.setAttribute('data-id', prod.id);
                 
                 if (!agotado) {
-                    // Generar mensaje personalizado para WhatsApp
                     const mensajeText = `¡Hola! Me dio un antojo de oficina 🍫. Quiero comprar: *${prod.nombre}* (S/ ${prod.precio}). ¿Me lo traes?`;
                     card.href = `https://wa.me/${TELEFONO_DELIVERY}?text=${encodeURIComponent(mensajeText)}`;
-                    card.target = "_blank"; // Abre en pestaña nueva
+                    card.target = "_blank"; 
                 }
                 
                 let stockText = `Stock: <strong>${prod.stock}</strong>`;
@@ -752,6 +844,35 @@
                 setTimeout(() => confeti.remove(), 1500);
             }
         }
+
+        // ── LÓGICA DE LAS VELITAS ──
+        let contadorVelas = 0;
+        const zonaVelitas = document.getElementById('zona-velitas');
+
+        // Usamos pointerdown para que se active rapidísimo apenas hagan clic o toquen
+        zonaVelitas.addEventListener('pointerdown', (e) => {
+            contadorVelas++;
+            
+            // Creamos el mensaje
+            const popup = document.createElement('div');
+            popup.className = 'vela-flotante';
+            
+            // Lógica para singular y plural
+            const textoVela = contadorVelas === 1 ? "VELA ENCENDIDA" : "VELAS ENCENDIDAS";
+            popup.innerHTML = `🕯️ + ${contadorVelas} ${textoVela} ✨`;
+            
+            // Lo posicionamos exactamente en las coordenadas del clic/dedo
+            popup.style.left = `${e.clientX}px`;
+            popup.style.top = `${e.clientY}px`;
+            
+            // Lo añadimos a la pantalla
+            document.body.appendChild(popup);
+            
+            // Limpiamos el HTML eliminando el mensaje cuando termine la animación (1.8 seg)
+            setTimeout(() => {
+                popup.remove();
+            }, 1800);
+        });
 
         document.getElementById('buscador').addEventListener('input', function(e) {
             const term = e.target.value.toLowerCase();
