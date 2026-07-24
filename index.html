@@ -143,38 +143,45 @@
             padding: 1rem;
         }
 
-        /* ── MASCOTA 3D CONTAINER ── */
+        /* ── MASCOTA 3D CONTAINER (SIN MARCO) ── */
         .mascot-3d-container {
             width: 100%;
             max-width: 600px;
             margin: 0 auto;
             height: 350px;
-            background: rgba(255, 255, 255, 0.4);
-            border: 2px solid #ffffff;
-            border-radius: 1.25rem;
-            box-shadow: 0 8px 32px rgba(168, 85, 247, 0.15);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            overflow: hidden;
+            
+            /* Se eliminaron todos los fondos, bordes y desenfoques */
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            
+            overflow: visible;
             display: flex;
             flex-direction: column;
+            align-items: center; /* Centra el botón superior */
             position: relative;
-            cursor: pointer; /* Cambia el cursor para invitar a hacer clic */
+            cursor: pointer;
         }
 
+        /* Título en formato "píldora" flotante */
         .mascot-header {
             background: linear-gradient(90deg, #7c3aed, #ec4899);
             color: white;
             text-align: center;
-            padding: 0.5rem;
+            padding: 0.5rem 1.5rem;
+            border-radius: 999px; /* Forma redondeada */
             font-weight: 900;
             font-size: 0.85rem;
             letter-spacing: 0.05em;
             text-transform: uppercase;
             z-index: 10;
+            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+            margin-bottom: 10px; /* Un poco de aire antes de que empiece el 3D */
+            display: inline-block;
         }
 
-        /* Estilos del visor Spline */
         spline-viewer {
             width: 100%;
             flex: 1;
@@ -184,8 +191,8 @@
         /* ── ANIMACIÓN DE VELITAS FLOTANTES ── */
         .vela-flotante {
             position: fixed;
-            pointer-events: none; /* Para que no interfiera con otros clics */
-            color: #FFD700; /* Color dorado */
+            pointer-events: none;
+            color: #FFD700; 
             font-family: 'Nunito', sans-serif;
             font-weight: 900;
             font-size: 1.3rem;
@@ -681,7 +688,7 @@
             </div>
         </main>
 
-        <!-- SECCIÓN DE MASCOTA 3D INTERACTIVA (AHORA CON MILAGRITOS) -->
+        <!-- SECCIÓN DE MASCOTA 3D INTERACTIVA (SIN MARCO) -->
         <aside class="mascot-3d-container" id="zona-velitas">
             <div class="mascot-header">✨ ¡Juega conmigo! ✨</div>
             <spline-viewer url="https://prod.spline.design/eHd4R46Xychllw19/scene.splinecode"></spline-viewer>
@@ -849,26 +856,20 @@
         let contadorVelas = 0;
         const zonaVelitas = document.getElementById('zona-velitas');
 
-        // Usamos pointerdown para que se active rapidísimo apenas hagan clic o toquen
         zonaVelitas.addEventListener('pointerdown', (e) => {
             contadorVelas++;
             
-            // Creamos el mensaje
             const popup = document.createElement('div');
             popup.className = 'vela-flotante';
             
-            // Lógica para singular y plural
             const textoVela = contadorVelas === 1 ? "VELA ENCENDIDA" : "VELAS ENCENDIDAS";
             popup.innerHTML = `🕯️ + ${contadorVelas} ${textoVela} ✨`;
             
-            // Lo posicionamos exactamente en las coordenadas del clic/dedo
             popup.style.left = `${e.clientX}px`;
             popup.style.top = `${e.clientY}px`;
             
-            // Lo añadimos a la pantalla
             document.body.appendChild(popup);
             
-            // Limpiamos el HTML eliminando el mensaje cuando termine la animación (1.8 seg)
             setTimeout(() => {
                 popup.remove();
             }, 1800);
