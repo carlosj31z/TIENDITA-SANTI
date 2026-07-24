@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Boogaloo&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- LIBRERÍA SPLINE (Mascota 3D) -->
+    <!-- LIBRERÍA SPLINE (Mascota 3D - Solo carga en escritorio) -->
     <script type="module" src="https://unpkg.com/@splinetool/viewer@1.12.98/build/spline-viewer.js"></script>
 
     <style>
@@ -64,7 +64,6 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* Desactivar fondo móvil para mejorar FPS */
         @media (max-width: 768px) {
             header { 
                 animation: none; 
@@ -116,7 +115,7 @@
             background-color: #ef4444;
             border-radius: 50%;
             display: inline-block;
-            animation: pulseActive 2s infinite alternate; /* Relajado de 1.2s a 2s */
+            animation: pulseActive 2s infinite alternate;
         }
         
         @keyframes pulseActive {
@@ -153,17 +152,9 @@
             padding: 1rem;
         }
 
-        /* ── MASCOTA 3D CONTAINER ── */
+        /* ── MASCOTA 3D CONTAINER (OCULTO EN MÓVIL) ── */
         .mascot-3d-container {
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-            height: 350px;
-            background: transparent;
-            border: none;
-            box-shadow: none;
-            overflow: visible;
-            display: flex;
+            display: none; /* Oculto por defecto en celulares para ahorrar recursos */
             flex-direction: column;
             align-items: center;
             position: relative;
@@ -192,30 +183,7 @@
             display: block;
         }
 
-        /* ── ANIMACIÓN DE VELITAS FLOTANTES ── */
-        .vela-flotante {
-            position: fixed;
-            pointer-events: none;
-            color: #FFD700; 
-            font-family: 'Nunito', sans-serif;
-            font-weight: 900;
-            font-size: 1.3rem;
-            text-shadow: 
-                0 2px 4px rgba(0,0,0,0.4), 
-                0 0 12px rgba(255, 215, 0, 0.9),
-                0 0 20px rgba(255, 140, 0, 0.8);
-            z-index: 9999;
-            animation: subirVela 1.8s ease-out forwards;
-            white-space: nowrap;
-        }
-
-        @keyframes subirVela {
-            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
-            15% { transform: translate(-50%, -100%) scale(1.2); opacity: 1; }
-            100% { transform: translate(-50%, -350%) scale(0.9); opacity: 0; }
-        }
-
-        /* Media Query para Escritorio */
+        /* Media Query para Escritorio (Aquí sí se muestra el 3D) */
         @media (min-width: 1024px) {
             .layout-wrapper {
                 flex-direction: row;
@@ -228,6 +196,7 @@
                 padding-top: 0;
             }
             .mascot-3d-container {
+                display: flex; /* Se muestra exclusivamente en pantallas grandes */
                 position: sticky;
                 top: 120px; 
                 width: 400px;
@@ -483,15 +452,14 @@
         .icon-yape { background: linear-gradient(135deg, #00d3ba, #740097); color: white; }
         .payment-note { font-size: 0.68rem; font-weight: 700; color: #a855f7; margin-top: 0.45rem; text-transform: uppercase; }
 
-        /* ── OPTIMIZED DELIVERY MASCOT (GPU ACCELERATED) ── */
+        /* ── DELIVERY MASCOT (GPU ACCELERATED) ── */
         .delivery-mascot {
             position: fixed;
             bottom: 18px;
-            left: -150px; /* Inicia fuera de la pantalla */
+            left: -150px;
             z-index: 200;
             cursor: pointer;
             user-select: none;
-            /* Se usa translate3d para forzar el uso de la GPU */
             animation: walkAcross 28s linear infinite;
             filter: drop-shadow(0 4px 12px rgba(124, 58, 237, 0.45));
             will-change: transform; 
@@ -631,7 +599,7 @@
             </div>
         </main>
 
-        <aside class="mascot-3d-container" id="zona-velitas">
+        <aside class="mascot-3d-container">
             <div class="mascot-header">✨ ¡Juega conmigo! ✨</div>
             <spline-viewer url="https://prod.spline.design/eHd4R46Xychllw19/scene.splinecode"></spline-viewer>
         </aside>
@@ -687,7 +655,6 @@
                 document.getElementById('ultimo-update').textContent = "Actualizado: " + ahora.toLocaleTimeString('es-PE');
             } catch (err) {
                 console.error("Error al cargar inventario:", err);
-                // Evitamos mostrar error si ya hay productos cargados (para no asustar al usuario si falla una recarga)
                 if(productos.length === 0) {
                     document.getElementById('tienda-container').innerHTML =
                         '<div class="msg-error"><p>No se pudo leer el inventario.</p><p>Reintentando en 1 minuto...</p></div>';
@@ -793,28 +760,12 @@
             }
         }
 
-        let contadorVelas = 0;
-        const zonaVelitas = document.getElementById('zona-velitas');
-
-        zonaVelitas.addEventListener('pointerdown', (e) => {
-            contadorVelas++;
-            const popup = document.createElement('div');
-            popup.className = 'vela-flotante';
-            const textoVela = contadorVelas === 1 ? "VELA ENCENDIDA" : "VELAS ENCENDIDAS";
-            popup.innerHTML = `🕯️ + ${contadorVelas} ${textoVela} ✨`;
-            popup.style.left = `${e.clientX}px`;
-            popup.style.top = `${e.clientY}px`;
-            document.body.appendChild(popup);
-            setTimeout(() => popup.remove(), 1800);
-        });
-
         document.getElementById('buscador').addEventListener('input', function(e) {
             const term = e.target.value.toLowerCase();
             renderizarProductos(productos.filter(p => p.nombre.toLowerCase().includes(term)));
         });
 
         cargarStock();
-        // Optimización clave: ahora consulta el Excel cada 60 segundos (1 minuto) en lugar de cada 15 segundos.
         setInterval(cargarStock, 60000);
     </script>
 </body>
