@@ -64,6 +64,14 @@
             100% { background-position: 0% 50%; }
         }
 
+        /* Desactivar fondo móvil para mejorar FPS */
+        @media (max-width: 768px) {
+            header { 
+                animation: none; 
+                background-position: 50% 50%; 
+            }
+        }
+
         header h1 {
             font-family: 'Boogaloo', cursive;
             font-size: clamp(2rem, 9vw, 3.25rem);
@@ -101,14 +109,16 @@
             justify-content: center;
             gap: 0.4rem;
         }
+        
         .pulse-dot {
             width: 8px;
             height: 8px;
             background-color: #ef4444;
             border-radius: 50%;
             display: inline-block;
-            animation: pulseActive 1.2s infinite alternate;
+            animation: pulseActive 2s infinite alternate; /* Relajado de 1.2s a 2s */
         }
+        
         @keyframes pulseActive {
             0% { transform: scale(0.8); opacity: 0.5; }
             100% { transform: scale(1.3); opacity: 1; }
@@ -127,7 +137,7 @@
             margin-bottom: 1rem;
         }
 
-        /* ── NUEVO LAYOUT (Escritorio vs Móvil) ── */
+        /* ── LAYOUT ── */
         .layout-wrapper {
             display: flex;
             flex-direction: column;
@@ -143,42 +153,36 @@
             padding: 1rem;
         }
 
-        /* ── MASCOTA 3D CONTAINER (SIN MARCO) ── */
+        /* ── MASCOTA 3D CONTAINER ── */
         .mascot-3d-container {
             width: 100%;
             max-width: 600px;
             margin: 0 auto;
             height: 350px;
-            
-            /* Se eliminaron todos los fondos, bordes y desenfoques */
             background: transparent;
             border: none;
             box-shadow: none;
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
-            
             overflow: visible;
             display: flex;
             flex-direction: column;
-            align-items: center; /* Centra el botón superior */
+            align-items: center;
             position: relative;
             cursor: pointer;
         }
 
-        /* Título en formato "píldora" flotante */
         .mascot-header {
             background: linear-gradient(90deg, #7c3aed, #ec4899);
             color: white;
             text-align: center;
             padding: 0.5rem 1.5rem;
-            border-radius: 999px; /* Forma redondeada */
+            border-radius: 999px;
             font-weight: 900;
             font-size: 0.85rem;
             letter-spacing: 0.05em;
             text-transform: uppercase;
             z-index: 10;
             box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
-            margin-bottom: 10px; /* Un poco de aire antes de que empiece el 3D */
+            margin-bottom: 10px;
             display: inline-block;
         }
 
@@ -211,7 +215,7 @@
             100% { transform: translate(-50%, -350%) scale(0.9); opacity: 0; }
         }
 
-        /* Media Query para Escritorio (Versión WEB) */
+        /* Media Query para Escritorio */
         @media (min-width: 1024px) {
             .layout-wrapper {
                 flex-direction: row;
@@ -273,7 +277,6 @@
             box-shadow:  0 4px 28px rgba(168, 85, 247, 0.4), 0 0 0 4px rgba(168, 85, 247, 0.12);
         }
 
-        /* BOTÓN DE RULETA */
         .btn-random {
             background: linear-gradient(135deg, #ec4899, #8b5cf6);
             color: white;
@@ -289,7 +292,6 @@
         }
         .btn-random:active { transform: scale(0.92); }
 
-        /* ── TIMESTAMP ── */
         #ultimo-update {
             display: block;
             text-align: center;
@@ -301,7 +303,7 @@
             margin: 0.25rem 0 0.875rem;
         }
 
-        /* ── PRODUCT GRID ── */
+        /* ── PRODUCT GRID & CARDS ── */
         #tienda-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -312,7 +314,6 @@
             #tienda-container { grid-template-columns: repeat(3, 1fr); }
         }
 
-        /* ── CARDS ── */
         .card {
             border-radius: 1.125rem;
             padding: 0.875rem;
@@ -335,17 +336,13 @@
                 linear-gradient(135deg, #c084fc 0%, #f472b6 55%, #67e8f9 100%);
             background-clip: padding-box, border-box;
             background-origin: padding-box, border-box;
-            box-shadow:
-                0 3px 14px rgba(192, 132, 252, 0.22),
-                0 1px 4px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 3px 14px rgba(192, 132, 252, 0.22);
             cursor: pointer;
         }
 
         .card-disponible:hover {
             transform: translateY(-3px);
-            box-shadow:
-                0 8px 26px rgba(192, 132, 252, 0.42),
-                0 2px 8px rgba(0, 0, 0, 0.07);
+            box-shadow: 0 8px 26px rgba(192, 132, 252, 0.42);
         }
 
         .card-agotado {
@@ -366,7 +363,6 @@
             100% { transform: scale(1.05); box-shadow: 0 0px 20px rgba(6, 182, 212, 0.8); }
         }
 
-        /* ── CARD INTERNALS ── */
         .card-name {
             font-weight: 800;
             font-size: 0.82rem;
@@ -417,15 +413,8 @@
             border-radius: 0.5rem;
         }
 
-        .badge-si {
-            background: linear-gradient(90deg, #a855f7, #06b6d4);
-            color: #ffffff;
-        }
-
-        .badge-no {
-            background: #e8dff4;
-            color: #7a6898;
-        }
+        .badge-si { background: linear-gradient(90deg, #a855f7, #06b6d4); color: #ffffff; }
+        .badge-no { background: #e8dff4; color: #7a6898; }
 
         .card-stock {
             font-size: 0.7rem;
@@ -486,63 +475,33 @@
         }
 
         .payment-info { flex: 1; }
-
-        .payment-title {
-            font-weight: 900;
-            font-size: 0.88rem;
-            color: var(--text);
-            margin-bottom: 0.4rem;
-            letter-spacing: 0.03em;
-        }
-
-        .payment-methods {
-            display: flex;
-            flex-direction: column;
-            gap: 0.3rem;
-        }
-
-        .payment-method {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: var(--text);
-        }
-
-        .payment-icon {
-            width: 28px;
-            height: 28px;
-            border-radius: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.9rem;
-            flex-shrink: 0;
-        }
-
+        .payment-title { font-weight: 900; font-size: 0.88rem; margin-bottom: 0.4rem; }
+        .payment-methods { display: flex; flex-direction: column; gap: 0.3rem; }
+        .payment-method { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 700; }
+        .payment-icon { width: 28px; height: 28px; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; }
         .icon-cash { background: linear-gradient(135deg, #10b981, #059669); color: white; }
         .icon-yape { background: linear-gradient(135deg, #00d3ba, #740097); color: white; }
+        .payment-note { font-size: 0.68rem; font-weight: 700; color: #a855f7; margin-top: 0.45rem; text-transform: uppercase; }
 
-        .payment-note {
-            font-size: 0.68rem;
-            font-weight: 700;
-            color: #a855f7;
-            margin-top: 0.45rem;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-        }
-
-        /* ── DELIVERY MASCOT ── */
+        /* ── OPTIMIZED DELIVERY MASCOT (GPU ACCELERATED) ── */
         .delivery-mascot {
             position: fixed;
             bottom: 18px;
+            left: -150px; /* Inicia fuera de la pantalla */
             z-index: 200;
             cursor: pointer;
             user-select: none;
+            /* Se usa translate3d para forzar el uso de la GPU */
             animation: walkAcross 28s linear infinite;
             filter: drop-shadow(0 4px 12px rgba(124, 58, 237, 0.45));
-            transform-origin: center bottom;
+            will-change: transform; 
+        }
+
+        @keyframes walkAcross {
+            0%    { transform: translate3d(calc(100vw + 150px), 0, 0); }
+            49.9% { transform: translate3d(0, 0, 0); }
+            50%   { transform: translate3d(0, 0, 0); }
+            100%  { transform: translate3d(calc(100vw + 150px), 0, 0); }
         }
 
         .delivery-mascot img {
@@ -550,6 +509,22 @@
             height: 120px;
             object-fit: contain;
             display: block;
+            animation: flipMascot 28s linear infinite;
+            will-change: transform;
+        }
+
+        @keyframes flipMascot {
+            0%, 49.9% { transform: scaleX(-1); }
+            50%, 100% { transform: scaleX(1); }
+        }
+
+        .delivery-mascot:hover img { 
+            animation: flipMascot 28s linear infinite, wiggle 0.4s ease infinite; 
+        }
+
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-6deg); }
+            50%      { transform: rotate(6deg); }
         }
 
         .delivery-bubble {
@@ -562,8 +537,6 @@
             font-family: 'Boogaloo', cursive;
             font-size: 1.25rem;
             font-weight: 700;
-            letter-spacing: 0.05em;
-            white-space: nowrap;
             padding: 0.55rem 1.2rem;
             border-radius: 1.5rem;
             margin-bottom: 10px;
@@ -582,27 +555,9 @@
             border-top-color: #ec4899;
         }
 
-        @keyframes walkAcross {
-            0%   { left: 105vw; }
-            0%, 49%   { --dir: scaleX(-1); }
-            50%, 99%  { --dir: scaleX(1); }
-            49%  { left: -120px; }
-            50%  { left: -120px; }
-            100% { left: 105vw; }
-        }
-
-        .delivery-mascot img { transform: var(--dir, scaleX(1)); }
-
         @keyframes bubblePop {
             0%, 100% { transform: translateX(-50%) scale(1); }
-            50%        { transform: translateX(-50%) scale(1.07); }
-        }
-
-        .delivery-mascot:hover img { animation: wiggle 0.4s ease infinite; }
-
-        @keyframes wiggle {
-            0%, 100% { transform: var(--dir, scaleX(1)) rotate(-6deg); }
-            50%        { transform: var(--dir, scaleX(1)) rotate(6deg); }
+            50%      { transform: translateX(-50%) scale(1.07); }
         }
 
         /* PARTY CONFETTI */
@@ -623,7 +578,6 @@
 </head>
 <body>
 
-    <!-- MASCOTA FLOTANTE DELIVERY -->
     <div class="delivery-mascot" title="¡Hacemos delivery!" onclick="celebrarDelivery(this)">
         <div class="delivery-bubble">🛵 ¡Hacemos delivery!</div>
         <img src="https://i.pinimg.com/originals/b3/19/9c/b3199c4fe56fc8a60be65d7a72579815.gif" alt="Delivery disponible">
@@ -634,11 +588,8 @@
         <p>Stock de la oficina &mdash; en tiempo real</p>
     </header>
 
-    <!-- WRAPPER PARA EL LAYOUT DE ESCRITORIO -->
     <div class="layout-wrapper">
-        
         <main>
-            <!-- CONTADORES Y FRASES DE OFICINA -->
             <div class="live-stats">
                 <span class="pulse-dot"></span>
                 <span id="live-count">4</span> personas de la oficina están revisando el stock ahora mismo... ¡Que no te lo ganen!
@@ -666,35 +617,25 @@
                 </div>
             </div>
 
-            <!-- BUSCADOR CON EL BOTÓN RULETA -->
             <div class="search-wrap">
                 <div class="search-row">
-                    <input
-                        type="text"
-                        id="buscador"
-                        placeholder="Busca tu antojo favorito..."
-                        autocomplete="off"
-                        spellcheck="false"
-                    >
+                    <input type="text" id="buscador" placeholder="Busca tu antojo favorito..." autocomplete="off" spellcheck="false">
                     <button class="btn-random" onclick="elegirAlAzar()">🎲 Sorpréndeme</button>
                 </div>
             </div>
 
             <span id="ultimo-update"></span>
 
-            <!-- CONTENEDOR DE PRODUCTOS -->
             <div id="tienda-container">
                 <p class="msg-loading">Cargando el carrito de antojos...</p>
             </div>
         </main>
 
-        <!-- SECCIÓN DE MASCOTA 3D INTERACTIVA (SIN MARCO) -->
         <aside class="mascot-3d-container" id="zona-velitas">
             <div class="mascot-header">✨ ¡Juega conmigo! ✨</div>
             <spline-viewer url="https://prod.spline.design/eHd4R46Xychllw19/scene.splinecode"></spline-viewer>
         </aside>
-
-    </div> <!-- FIN DEL LAYOUT WRAPPER -->
+    </div>
 
     <script>
         const SPREADSHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRLe8TRDdLCgjXBQf5jL3jN1e_CugqqcyFRxT9VO-uyKL05-avxObnclS809ZzMM6imAVWkN_rfkmTT/pub?output=csv";
@@ -742,14 +683,15 @@
                     .filter(p => p !== undefined && p.nombre !== "");
 
                 renderizarProductos(productos);
-
                 const ahora = new Date();
                 document.getElementById('ultimo-update').textContent = "Actualizado: " + ahora.toLocaleTimeString('es-PE');
-
             } catch (err) {
                 console.error("Error al cargar inventario:", err);
-                document.getElementById('tienda-container').innerHTML =
-                    '<div class="msg-error"><p>No se pudo leer el inventario.</p><p>Reintentando en 15 segundos...</p></div>';
+                // Evitamos mostrar error si ya hay productos cargados (para no asustar al usuario si falla una recarga)
+                if(productos.length === 0) {
+                    document.getElementById('tienda-container').innerHTML =
+                        '<div class="msg-error"><p>No se pudo leer el inventario.</p><p>Reintentando en 1 minuto...</p></div>';
+                }
             }
         }
 
@@ -809,7 +751,6 @@
 
             const intervalo = setInterval(() => {
                 tarjetas.forEach(t => t.classList.remove('card-highlight'));
-                
                 const indexRandom = Math.floor(Math.random() * tarjetas.length);
                 tarjetas[indexRandom].classList.add('card-highlight');
 
@@ -852,27 +793,19 @@
             }
         }
 
-        // ── LÓGICA DE LAS VELITAS ──
         let contadorVelas = 0;
         const zonaVelitas = document.getElementById('zona-velitas');
 
         zonaVelitas.addEventListener('pointerdown', (e) => {
             contadorVelas++;
-            
             const popup = document.createElement('div');
             popup.className = 'vela-flotante';
-            
             const textoVela = contadorVelas === 1 ? "VELA ENCENDIDA" : "VELAS ENCENDIDAS";
             popup.innerHTML = `🕯️ + ${contadorVelas} ${textoVela} ✨`;
-            
             popup.style.left = `${e.clientX}px`;
             popup.style.top = `${e.clientY}px`;
-            
             document.body.appendChild(popup);
-            
-            setTimeout(() => {
-                popup.remove();
-            }, 1800);
+            setTimeout(() => popup.remove(), 1800);
         });
 
         document.getElementById('buscador').addEventListener('input', function(e) {
@@ -881,7 +814,8 @@
         });
 
         cargarStock();
-        setInterval(cargarStock, 15000);
+        // Optimización clave: ahora consulta el Excel cada 60 segundos (1 minuto) en lugar de cada 15 segundos.
+        setInterval(cargarStock, 60000);
     </script>
 </body>
 </html>
