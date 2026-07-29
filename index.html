@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title> GIANNEXPRESS⚡🍫</title>
+    <title>GIANNEXPRESS⚡🍫</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Boogaloo&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Manrope:wght@500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
     <!-- LIBRERÍA SPLINE (Mascota 3D - Solo carga en escritorio) -->
     <script type="module" src="https://unpkg.com/@splinetool/viewer@1.12.98/build/spline-viewer.js"></script>
 
@@ -15,125 +15,145 @@
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --purple:  #7C3AED;
-            --violet:  #A855F7;
-            --fuchsia: #DB2777;
-            --cyan:    #06B6D4;
-            --bg:      #faf7ff;
-            --text:    #1a0a2e;
-            --muted:   #7a6898;
+            --cream:      #FBF1E0;
+            --paper:      #FFFDF8;
+            --plum:       #2E1A3D;
+            --plum-2:     #43265A;
+            --coral:      #FF5A4E;
+            --coral-dark: #DD4237;
+            --marigold:   #FFB627;
+            --mint:       #1FA98A;
+            --line:       #E7D9BE;
+            --muted:      #8B7A98;
+            --ink:        #241533;
         }
 
+        html { scroll-behavior: smooth; }
+
         body {
-            font-family: 'Nunito', sans-serif;
-            background-color: var(--bg);
+            font-family: 'Manrope', sans-serif;
+            background-color: var(--cream);
             background-image:
-                radial-gradient(ellipse at 15% 40%, rgba(168, 85, 247, 0.07) 0%, transparent 55%),
-                radial-gradient(ellipse at 85% 15%, rgba(219, 39, 119, 0.06) 0%, transparent 55%),
-                radial-gradient(ellipse at 50% 90%, rgba(6, 182, 212, 0.06) 0%, transparent 55%);
+                radial-gradient(circle at 1px 1px, rgba(46,26,61,0.06) 1px, transparent 0);
+            background-size: 22px 22px;
             min-height: 100vh;
             padding-bottom: 3rem;
             -webkit-overflow-scrolling: touch;
-            color: var(--text);
+            color: var(--ink);
             overflow-x: hidden;
         }
 
-        /* ── HEADER ── */
+        a { color: inherit; }
+
+        button:focus-visible,
+        input:focus-visible,
+        a:focus-visible {
+            outline: 3px solid var(--coral);
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
+
+        /* ── HEADER: cartel de máquina expendedora ── */
         header {
             position: sticky;
             top: 0;
             z-index: 100;
-            padding: 1.375rem 1rem 1.125rem;
+            padding: 1.5rem 1rem 1.75rem;
             text-align: center;
-            background: linear-gradient(
-                135deg,
-                #3d00b7 0%, #7b00e0 18%, #bb00ff 34%, #e0009a 50%,
-                #ff0073 62%, #00c8ff 78%, #a800ff 90%, #3d00b7 100%
-            );
-            background-size: 350% 350%;
-            animation: headerFlow 7s ease infinite;
-            box-shadow:
-                0 4px 24px rgba(160, 0, 255, 0.45),
-                0 2px 8px rgba(255, 0, 115, 0.35),
-                inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            background: var(--plum);
+            position: relative;
         }
 
-        @keyframes headerFlow {
-            0%   { background-position: 0% 50%; }
-            50%  { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        @media (max-width: 768px) {
-            header { 
-                animation: none; 
-                background-position: 50% 50%; 
-            }
+        header::after {
+            content: "";
+            position: absolute;
+            left: 0; right: 0; bottom: -9px;
+            height: 18px;
+            background:
+                radial-gradient(circle at 9px 0, transparent 9px, var(--plum) 9.5px) repeat-x;
+            background-size: 26px 18px;
         }
 
         header h1 {
-            font-family: 'Boogaloo', cursive;
-            font-size: clamp(2rem, 9vw, 3.25rem);
-            color: #ffffff;
-            letter-spacing: 0.14em;
-            text-shadow:
-                0 0 24px rgba(255, 255, 255, 0.45),
-                0 0 50px rgba(255, 0, 200, 0.35),
-                2px 2px 0 rgba(0, 0, 0, 0.18);
+            font-family: 'Baloo 2', cursive;
+            font-weight: 800;
+            font-size: clamp(2rem, 9vw, 3.1rem);
+            color: var(--cream);
+            letter-spacing: 0.02em;
+            display: inline-block;
+            transform: rotate(-1.5deg);
+            text-shadow: 3px 3px 0 var(--coral-dark);
             line-height: 1.1;
         }
 
         header p {
-            font-size: 0.7rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.68rem;
             font-weight: 700;
-            color: rgba(255, 255, 255, 0.85);
-            margin-top: 0.35rem;
-            letter-spacing: 0.1em;
+            color: var(--marigold);
+            margin-top: 0.6rem;
+            letter-spacing: 0.16em;
             text-transform: uppercase;
         }
 
-        /* ── INTERACTIVE TOP BAR ── */
+        /* ── LIVE STATS: panel LED ── */
         .live-stats {
-            background: #ffe6f2;
-            border: 1px dashed var(--fuchsia);
-            color: #b91c1c;
+            background: var(--plum-2);
+            color: var(--cream);
+            font-family: 'Space Mono', monospace;
             text-align: center;
-            font-size: 0.75rem;
-            font-weight: 800;
-            padding: 0.35rem;
-            margin-bottom: 0.5rem;
-            border-radius: 0.5rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 0.55rem 0.75rem;
+            margin-bottom: 0.75rem;
+            border-radius: 0.6rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.4rem;
+            gap: 0.5rem;
+            letter-spacing: 0.02em;
         }
-        
+
+        .live-stats strong { color: var(--marigold); }
+
         .pulse-dot {
             width: 8px;
             height: 8px;
-            background-color: #ef4444;
+            background-color: var(--coral);
             border-radius: 50%;
             display: inline-block;
             animation: pulseActive 2s infinite alternate;
+            flex-shrink: 0;
         }
-        
+
         @keyframes pulseActive {
             0% { transform: scale(0.8); opacity: 0.5; }
             100% { transform: scale(1.3); opacity: 1; }
         }
 
+        /* ── TICKET DE FRASE ── */
         .office-quote {
-            background: #ffffff;
-            border-left: 4px solid var(--cyan);
-            padding: 0.6rem 0.8rem;
-            border-radius: 0.35rem;
+            background: var(--paper);
+            border: 1.5px dashed var(--line);
+            padding: 0.7rem 0.9rem;
+            border-radius: 0.5rem;
             font-size: 0.8rem;
-            font-weight: 700;
-            color: #4b5563;
+            font-weight: 600;
+            color: var(--plum-2);
             font-style: italic;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            box-shadow: 0 2px 0 var(--line);
             margin-bottom: 1rem;
+            position: relative;
+            transform: rotate(0.4deg);
+        }
+
+        .office-quote::before {
+            content: "“";
+            font-family: 'Baloo 2', cursive;
+            color: var(--coral);
+            font-size: 1.3rem;
+            font-style: normal;
+            margin-right: 0.15rem;
         }
 
         /* ── LAYOUT ── */
@@ -152,7 +172,7 @@
             padding: 1rem;
         }
 
-        /* ── MASCOTA PNG CONTAINER (SIN MARCOS EN MÓVIL) ── */
+        /* ── MASCOTA PNG (móvil) ── */
         .mobile-mascot-box {
             display: flex;
             flex-direction: column;
@@ -161,33 +181,27 @@
             cursor: pointer;
             width: 100%;
             max-width: 320px;
-            margin: 1.5rem auto 0;
+            margin: 1.75rem auto 0;
             background: transparent;
             padding: 0;
-            border-radius: 0;
-            box-shadow: none;
             border: none;
-            transition: transform 0.2s ease;
-        }
-
-        .mobile-mascot-box:active {
-            transform: scale(0.97);
         }
 
         .mascot-header {
-            background: linear-gradient(90deg, #7c3aed, #ec4899);
-            color: white;
+            background: var(--plum);
+            color: var(--marigold);
             text-align: center;
             padding: 0.4rem 1.2rem;
             border-radius: 999px;
-            font-weight: 900;
-            font-size: 0.8rem;
-            letter-spacing: 0.05em;
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            font-size: 0.72rem;
+            letter-spacing: 0.06em;
             text-transform: uppercase;
             z-index: 10;
-            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
             margin-bottom: 10px;
             display: inline-block;
+            border: 1.5px dashed var(--marigold);
         }
 
         .mobile-mascot-box img {
@@ -195,18 +209,22 @@
             height: 220px;
             object-fit: contain;
             display: block;
-            background: transparent;
-            border: none;
-            box-shadow: none;
+        }
+
+        .combo-tag {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--muted);
+            margin-top: 0.4rem;
+            text-align: center;
         }
 
         @media (min-width: 1024px) {
-            .mobile-mascot-box {
-                display: none;
-            }
+            .mobile-mascot-box { display: none; }
         }
 
-        /* ── MASCOTA 3D CONTAINER (SOLO PC) ── */
+        /* ── MASCOTA 3D (PC) ── */
         .mascot-3d-container {
             display: none;
             flex-direction: column;
@@ -215,36 +233,8 @@
             cursor: pointer;
         }
 
-        spline-viewer {
-            width: 100%;
-            flex: 1;
-            display: block;
-        }
+        spline-viewer { width: 100%; flex: 1; display: block; }
 
-        /* ── ANIMACIÓN DE PIZZAS FLOTANTES ── */
-        .vela-flotante {
-            position: fixed;
-            pointer-events: none;
-            color: #FFD700; 
-            font-family: 'Nunito', sans-serif;
-            font-weight: 900;
-            font-size: 1.3rem;
-            text-shadow: 
-                0 2px 4px rgba(0,0,0,0.4), 
-                0 0 12px rgba(255, 215, 0, 0.9),
-                0 0 20px rgba(255, 140, 0, 0.8);
-            z-index: 9999;
-            animation: subirVela 1.8s ease-out forwards;
-            white-space: nowrap;
-        }
-
-        @keyframes subirVela {
-            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
-            15% { transform: translate(-50%, -100%) scale(1.2); opacity: 1; }
-            100% { transform: translate(-50%, -350%) scale(0.9); opacity: 0; }
-        }
-
-        /* Media Query para Escritorio */
         @media (min-width: 1024px) {
             .layout-wrapper {
                 flex-direction: row;
@@ -252,88 +242,185 @@
                 justify-content: center;
                 padding-top: 1.5rem;
             }
-            main {
-                margin: 0;
-                padding-top: 0;
-            }
+            main { margin: 0; padding-top: 0; }
             .mascot-3d-container {
                 display: flex;
                 position: sticky;
-                top: 120px; 
+                top: 120px;
                 width: 400px;
-                height: 500px; 
+                height: 500px;
                 margin: 0;
             }
         }
 
-        /* ── SEARCH & TOOLS ── */
+        /* ── ANIMACIÓN "+1 antojo" ── */
+        .vela-flotante {
+            position: fixed;
+            pointer-events: none;
+            color: var(--coral-dark);
+            font-family: 'Baloo 2', cursive;
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-shadow: 0 2px 0 rgba(255,255,255,0.6);
+            z-index: 9999;
+            animation: subirVela 1.6s ease-out forwards;
+            white-space: nowrap;
+        }
+
+        @keyframes subirVela {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            15% { transform: translate(-50%, -100%) scale(1.15); opacity: 1; }
+            100% { transform: translate(-50%, -330%) scale(0.9); opacity: 0; }
+        }
+
+        /* ── ANTOJO DEL DÍA ── */
+        .antojo-dia {
+            background: var(--plum);
+            border-radius: 1rem;
+            padding: 0.9rem 1.1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .antojo-dia:active { transform: scale(0.98); }
+
+        .antojo-dia-badge {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.62rem;
+            font-weight: 700;
+            color: var(--plum);
+            background: var(--marigold);
+            padding: 0.3rem 0.5rem;
+            border-radius: 0.4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            flex-shrink: 0;
+        }
+
+        .antojo-dia-info { flex: 1; min-width: 0; }
+        .antojo-dia-nombre {
+            color: var(--cream);
+            font-weight: 800;
+            font-size: 0.88rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .antojo-dia-precio {
+            font-family: 'Baloo 2', cursive;
+            color: var(--marigold);
+            font-size: 0.95rem;
+            margin-top: 0.1rem;
+        }
+        .antojo-dia-flecha { color: var(--cream); font-size: 1.1rem; flex-shrink: 0; }
+
+        /* ── PAYMENT BANNER: placa de instrucciones ── */
+        .payment-banner {
+            background: var(--paper);
+            border: 1.5px solid var(--line);
+            border-radius: 1rem;
+            padding: 1rem;
+            margin: 0 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .payment-photo {
+            width: 76px;
+            height: 76px;
+            border-radius: 0.75rem;
+            object-fit: contain;
+            background-color: var(--cream);
+            flex-shrink: 0;
+            border: 1.5px solid var(--line);
+            padding: 6px;
+        }
+
+        .payment-info { flex: 1; }
+        .payment-title {
+            font-family: 'Baloo 2', cursive;
+            font-weight: 700;
+            font-size: 0.92rem;
+            margin-bottom: 0.45rem;
+            color: var(--plum);
+        }
+        .payment-methods { display: flex; flex-direction: column; gap: 0.35rem; }
+        .payment-method { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 700; }
+        .payment-icon { width: 26px; height: 26px; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0; color: white; }
+        .icon-cash { background: var(--mint); }
+        .icon-yape { background: var(--coral); }
+        .payment-note {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.64rem;
+            font-weight: 700;
+            color: var(--muted);
+            margin-top: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        /* ── SEARCH & TOOLS: teclado de pedido ── */
         .search-wrap {
             position: sticky;
-            top: 83px;
+            top: 0;
             z-index: 50;
             padding: 0.75rem 0 0.5rem;
-            background: linear-gradient(to bottom, var(--bg) 75%, transparent);
+            background: linear-gradient(to bottom, var(--cream) 78%, transparent);
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
         }
 
-        .search-row {
-            display: flex;
-            gap: 0.5rem;
-            width: 100%;
-        }
+        .search-row { display: flex; gap: 0.5rem; width: 100%; }
 
         .search-wrap input {
             flex: 1;
-            padding: 0.9rem 1.25rem;
-            border-radius: 999px;
-            border: 2.5px solid transparent;
-            background-image:
-                linear-gradient(white, white),
-                linear-gradient(135deg, #a855f7 0%, #ec4899 50%, #06b6d4 100%);
-            background-clip: padding-box, border-box;
-            background-origin: padding-box, border-box;
-            font-family: 'Nunito', sans-serif;
-            font-size: 0.925rem;
+            padding: 0.85rem 1.1rem;
+            border-radius: 0.7rem;
+            border: 2px solid var(--plum);
+            background: var(--paper);
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.9rem;
             font-weight: 700;
-            color: var(--text);
-            box-shadow: 0 4px 18px rgba(168, 85, 247, 0.2);
+            color: var(--ink);
             outline: none;
-            transition: box-shadow 0.2s ease;
-        }
-
-        .search-wrap input:focus {
-            box-shadow:  0 4px 28px rgba(168, 85, 247, 0.4), 0 0 0 4px rgba(168, 85, 247, 0.12);
         }
 
         .btn-random {
-            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            background: var(--coral);
             color: white;
-            border: none;
-            padding: 0 1.2rem;
-            border-radius: 999px;
+            border: 2px solid var(--plum);
+            padding: 0 1.1rem;
+            border-radius: 0.7rem;
+            font-family: 'Manrope', sans-serif;
             font-weight: 800;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             cursor: pointer;
-            box-shadow: 0 4px 14px rgba(236, 72, 153, 0.4);
             white-space: nowrap;
-            transition: transform 0.1s ease, background 0.2s;
+            transition: transform 0.1s ease;
         }
-        .btn-random:active { transform: scale(0.92); }
+        .btn-random:active { transform: scale(0.93); }
 
         #ultimo-update {
             display: block;
             text-align: center;
-            font-size: 0.68rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.64rem;
             font-weight: 700;
-            color: #b0a0c8;
-            letter-spacing: 0.08em;
+            color: var(--muted);
+            letter-spacing: 0.06em;
             text-transform: uppercase;
             margin: 0.25rem 0 0.875rem;
         }
 
-        /* ── PRODUCT GRID & CARDS ── */
+        /* ── GRID Y TARJETAS: "boletos" de máquina ── */
         #tienda-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -345,175 +432,230 @@
         }
 
         .card {
-            border-radius: 1.125rem;
-            padding: 0.875rem;
+            border-radius: 0.9rem;
+            padding: 0.9rem 0.85rem 0.8rem;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            min-height: 10.5rem;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            min-height: 11rem;
+            transition: transform 0.15s ease;
             position: relative;
-            text-decoration: none; 
+            text-decoration: none;
+            overflow: hidden;
         }
 
-        .card:active { transform: scale(0.95); }
+        .card:active { transform: scale(0.96); }
 
         .card-disponible {
-            background: #ffffff;
-            border: 2.5px solid transparent;
-            background-image:
-                linear-gradient(white, white),
-                linear-gradient(135deg, #c084fc 0%, #f472b6 55%, #67e8f9 100%);
-            background-clip: padding-box, border-box;
-            background-origin: padding-box, border-box;
-            box-shadow: 0 3px 14px rgba(192, 132, 252, 0.22);
+            background: var(--paper);
+            border: 2px solid var(--plum);
+            box-shadow: 3px 3px 0 var(--plum);
             cursor: pointer;
         }
 
         .card-disponible:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 26px rgba(192, 132, 252, 0.42);
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0 var(--coral);
         }
 
         .card-agotado {
-            background: #f0ecf8;
-            border: 2px solid #e0d6f0;
-            opacity: 0.42;
-            filter: grayscale(30%);
+            background: #F2EBDA;
+            border: 2px dashed var(--line);
+            opacity: 0.75;
             cursor: not-allowed;
         }
 
         .card-highlight {
-            animation: highlightFlash 0.5s ease 3 alternate;
-            border: 2.5px solid #06b6d4 !important;
+            animation: highlightFlash 0.45s ease 3 alternate;
+            border-color: var(--coral) !important;
             z-index: 10;
         }
         @keyframes highlightFlash {
-            0% { transform: scale(1); box-shadow: 0 0px 0px rgba(6, 182, 212, 0); }
-            100% { transform: scale(1.05); box-shadow: 0 0px 20px rgba(6, 182, 212, 0.8); }
+            0% { box-shadow: 3px 3px 0 var(--plum); }
+            100% { box-shadow: 6px 6px 0 var(--marigold); transform: translate(-2px,-2px) scale(1.02); }
+        }
+
+        .slot-code {
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: var(--plum);
+            color: var(--marigold);
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            font-size: 0.62rem;
+            padding: 0.15rem 0.4rem;
+            border-radius: 0 0 0.5rem 0;
+            letter-spacing: 0.03em;
+        }
+
+        .card-agotado .slot-code { background: var(--muted); color: var(--cream); }
+
+        .stamp-agotado {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-16deg);
+            border: 2.5px solid var(--coral-dark);
+            color: var(--coral-dark);
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            font-size: 0.72rem;
+            letter-spacing: 0.08em;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.3rem;
+            opacity: 0.8;
+            pointer-events: none;
         }
 
         .card-name {
+            font-family: 'Manrope', sans-serif;
             font-weight: 800;
             font-size: 0.82rem;
             line-height: 1.3;
-            color: var(--text);
+            color: var(--ink);
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
             word-break: break-word;
+            margin-top: 0.9rem;
         }
 
-        .card-agotado .card-name { color: #8a7aaa; }
+        .card-agotado .card-name { color: #9a8b73; }
 
         .card-price {
             display: inline-block;
-            margin-top: 0.4rem;
-            font-size: 0.975rem;
-            font-weight: 900;
-            background: linear-gradient(90deg, #7c3aed, #ec4899);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            margin-top: 0.35rem;
+            font-family: 'Baloo 2', cursive;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--coral-dark);
         }
 
-        .card-agotado .card-price {
-            background: none;
-            -webkit-text-fill-color: #9a8ab0;
-        }
+        .card-agotado .card-price { color: #a89a80; }
 
-        .card-footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 0.625rem;
-            padding-top: 0.6rem;
-            border-top: 1.5px solid #f0e8f8;
-        }
-
-        .card-agotado .card-footer { border-color: #ddd4ee; }
+        .card-footer { margin-top: 0.65rem; }
 
         .badge {
-            font-size: 0.63rem;
-            font-weight: 900;
-            letter-spacing: 0.07em;
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.62rem;
+            font-weight: 800;
+            letter-spacing: 0.03em;
             text-transform: uppercase;
-            padding: 0.22rem 0.6rem;
-            border-radius: 0.5rem;
+            padding: 0.28rem 0.6rem;
+            border-radius: 0.4rem;
+            display: inline-block;
         }
 
-        .badge-si { background: linear-gradient(90deg, #a855f7, #06b6d4); color: #ffffff; }
-        .badge-no { background: #e8dff4; color: #7a6898; }
+        .badge-si { background: var(--mint); color: white; }
+        .badge-no { background: #ddd0b0; color: #7a6a4a; }
+
+        .stock-bar-wrap {
+            width: 100%;
+            height: 6px;
+            background: var(--line);
+            border-radius: 999px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+        .stock-bar-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: var(--mint);
+        }
+        .stock-bar-fill.mid { background: var(--marigold); }
+        .stock-bar-fill.low { background: var(--coral); }
 
         .card-stock {
-            font-size: 0.7rem;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.62rem;
             font-weight: 700;
             color: var(--muted);
+            margin-top: 0.3rem;
+            display: block;
         }
 
-        .card-stock strong {
-            font-size: 0.85rem;
-            font-weight: 900;
-            color: var(--purple);
-        }
+        .stock-urgente { color: var(--coral-dark) !important; animation: textBlink 1s infinite; }
+        @keyframes textBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
-        .stock-urgente {
-            color: #ef4444 !important;
-            animation: textBlink 1s infinite;
-        }
-        @keyframes textBlink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
+        .card-agotado .card-stock { color: #a89a80; }
 
-        .card-agotado .card-stock strong { color: #9a8ab0; }
-
-        /* ── PAYMENT BANNER ── */
-        .payment-banner {
-            background: linear-gradient(135deg, #f5f0ff 0%, #fdf2ff 50%, #f0fbff 100%);
-            border: 2px solid transparent;
-            background-image:
-                linear-gradient(135deg, #f5f0ff, #fdf2ff, #f0fbff),
-                linear-gradient(135deg, #a855f7, #ec4899, #06b6d4);
-            background-clip: padding-box, border-box;
-            background-origin: padding-box, border-box;
-            border-radius: 1.25rem;
-            padding: 1rem;
-            margin: 1rem 0 0.5rem;
-            display: flex;
+        /* ── TICKET GANADOR (ruleta) ── */
+        .ticket-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(46, 26, 61, 0.55);
+            z-index: 500;
             align-items: center;
-            gap: 1rem;
-            box-shadow: 0 4px 20px rgba(168, 85, 247, 0.15);
+            justify-content: center;
+            padding: 1.25rem;
+        }
+        .ticket-overlay.activo { display: flex; }
+
+        .ticket-popup {
+            background: var(--paper);
+            border-radius: 1rem;
+            border: 2.5px dashed var(--plum);
+            max-width: 320px;
+            width: 100%;
+            padding: 1.25rem 1.25rem 1.5rem;
+            text-align: center;
+            position: relative;
+            animation: ticketIn 0.35s cubic-bezier(0.2, 1.4, 0.4, 1);
         }
 
-        .payment-photo {
-            width: 90px;
-            height: 90px;
-            border-radius: 0.875rem;
-            object-fit: contain;
-            background-color: #ffffff;
-            flex-shrink: 0;
-            border: 2.5px solid transparent;
-            background-image:
-                linear-gradient(white, white),
-                linear-gradient(135deg, #a855f7, #ec4899);
-            background-clip: padding-box, border-box;
-            background-origin: padding-box, border-box;
-            box-shadow: 0 3px 12px rgba(168, 85, 247, 0.25);
-            padding: 5px;
+        @keyframes ticketIn {
+            0% { transform: scale(0.7) rotate(-6deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
         }
 
-        .payment-info { flex: 1; }
-        .payment-title { font-weight: 900; font-size: 0.88rem; margin-bottom: 0.4rem; }
-        .payment-methods { display: flex; flex-direction: column; gap: 0.3rem; }
-        .payment-method { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 700; }
-        .payment-icon { width: 28px; height: 28px; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; }
-        .icon-cash { background: linear-gradient(135deg, #10b981, #059669); color: white; }
-        .icon-yape { background: linear-gradient(135deg, #00d3ba, #740097); color: white; }
-        .payment-note { font-size: 0.68rem; font-weight: 700; color: #a855f7; margin-top: 0.45rem; text-transform: uppercase; }
+        .ticket-eyebrow {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--coral-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .ticket-nombre {
+            font-family: 'Baloo 2', cursive;
+            font-size: 1.25rem;
+            color: var(--plum);
+            margin: 0.5rem 0 0.2rem;
+        }
+        .ticket-precio {
+            font-family: 'Baloo 2', cursive;
+            font-size: 1.1rem;
+            color: var(--coral-dark);
+            margin-bottom: 1rem;
+        }
+        .ticket-cta {
+            display: inline-block;
+            background: var(--mint);
+            color: white;
+            font-family: 'Manrope', sans-serif;
+            font-weight: 800;
+            font-size: 0.82rem;
+            padding: 0.7rem 1.3rem;
+            border-radius: 0.7rem;
+            text-decoration: none;
+            border: 2px solid var(--plum);
+        }
+        .ticket-cerrar {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.65rem;
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            color: var(--muted);
+            cursor: pointer;
+            font-weight: 700;
+        }
 
-        /* ── DELIVERY MASCOT (GPU ACCELERATED) ── */
+        /* ── DELIVERY MASCOT ── */
         .delivery-mascot {
             position: fixed;
             bottom: 18px;
@@ -522,8 +664,7 @@
             cursor: pointer;
             user-select: none;
             animation: walkAcross 28s linear infinite;
-            filter: drop-shadow(0 4px 12px rgba(124, 58, 237, 0.45));
-            will-change: transform; 
+            will-change: transform;
         }
 
         @keyframes walkAcross {
@@ -547,8 +688,8 @@
             50%, 100% { transform: scaleX(1); }
         }
 
-        .delivery-mascot:hover img { 
-            animation: flipMascot 28s linear infinite, wiggle 0.4s ease infinite; 
+        .delivery-mascot:hover img {
+            animation: flipMascot 28s linear infinite, wiggle 0.4s ease infinite;
         }
 
         @keyframes wiggle {
@@ -561,17 +702,18 @@
             bottom: 100%;
             left: 50%;
             transform: translateX(-50%);
-            background: linear-gradient(135deg, #7c3aed, #ec4899);
-            color: white;
-            font-family: 'Boogaloo', cursive;
-            font-size: 1.25rem;
+            background: var(--plum);
+            color: var(--marigold);
+            font-family: 'Baloo 2', cursive;
+            font-size: 1.1rem;
             font-weight: 700;
-            padding: 0.55rem 1.2rem;
+            padding: 0.5rem 1.1rem;
             border-radius: 1.5rem;
             margin-bottom: 10px;
-            box-shadow: 0 4px 18px rgba(124, 58, 237, 0.55);
+            box-shadow: 0 4px 14px rgba(46, 26, 61, 0.4);
             animation: bubblePop 1.8s ease-in-out infinite;
             pointer-events: none;
+            white-space: nowrap;
         }
 
         .delivery-bubble::after {
@@ -581,7 +723,7 @@
             left: 50%;
             transform: translateX(-50%);
             border: 6px solid transparent;
-            border-top-color: #ec4899;
+            border-top-color: var(--plum);
         }
 
         @keyframes bubblePop {
@@ -589,19 +731,27 @@
             50%      { transform: translateX(-50%) scale(1.07); }
         }
 
-        /* PARTY CONFETTI */
+        /* CONFETTI */
         .confetti {
             position: fixed;
             width: 8px;
             height: 8px;
-            border-radius: 50%;
+            border-radius: 2px;
             z-index: 210;
             pointer-events: none;
             animation: dropConfetti 1.5s ease-out forwards;
         }
         @keyframes dropConfetti {
-            0% { transform: translate(0, 0) cubic-bezier(0, 1.3, 0.3, 1) rotate(0deg); opacity: 1; }
+            0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
             100% { transform: translate(var(--x), var(--y)) rotate(360deg); opacity: 0; }
+        }
+
+        /* ── RESPETA MOVIMIENTO REDUCIDO ── */
+        @media (prefers-reduced-motion: reduce) {
+            .pulse-dot, .delivery-mascot, .delivery-mascot img, .delivery-bubble,
+            .card-highlight, .stock-urgente, .ticket-popup {
+                animation: none !important;
+            }
         }
     </style>
 </head>
@@ -613,7 +763,7 @@
     </div>
 
     <header>
-        <h1> GIANNEXPRESS⚡</h1>
+        <h1>GIANNEXPRESS⚡</h1>
         <p>Stock de la oficina &mdash; en tiempo real</p>
     </header>
 
@@ -621,12 +771,21 @@
         <main>
             <div class="live-stats">
                 <span class="pulse-dot"></span>
-                <span id="live-count">4</span> personas de la oficina están revisando el stock ahora mismo... ¡Que no te lo ganen!
+                <strong id="live-count">4</strong>&nbsp;personas de la oficina están revisando el stock ahora mismo...
             </div>
 
             <div class="office-quote" id="random-quote">
-                "¿Estresado por sacar adelante ese pendiente? ¿Reuniones sin fin? El dulce cura el alma."
+                ¿Estresado por sacar adelante ese pendiente? ¿Reuniones sin fin? El dulce cura el alma.
             </div>
+
+            <button class="antojo-dia" id="antojo-dia" style="display:none;" onclick="irAlAntojoDelDia()">
+                <span class="antojo-dia-badge">🔥 Del día</span>
+                <span class="antojo-dia-info">
+                    <span class="antojo-dia-nombre" id="antojo-dia-nombre">Cargando...</span>
+                    <span class="antojo-dia-precio" id="antojo-dia-precio"></span>
+                </span>
+                <span class="antojo-dia-flecha">→</span>
+            </button>
 
             <div class="payment-banner">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Icono_de_la_aplicaci%C3%B3n_Yape.png" alt="Medios de pago aceptados" class="payment-photo">
@@ -649,7 +808,7 @@
             <div class="search-wrap">
                 <div class="search-row">
                     <input type="text" id="buscador" placeholder="Busca tu antojo favorito..." autocomplete="off" spellcheck="false">
-                    <button class="btn-random" onclick="elegirAlAzar()">🎲 Sorpréndeme</button>
+                    <button class="btn-random" onclick="elegirAlAzar()">🎰 Ruleta</button>
                 </div>
             </div>
 
@@ -659,23 +818,35 @@
                 <p class="msg-loading">Cargando el carrito de antojos...</p>
             </div>
 
-            <!-- IMAGEN PNG VISIBLE SOLO EN MÓVIL (SIN MARCOS) -->
+            <!-- IMAGEN PNG VISIBLE SOLO EN MÓVIL -->
             <div class="mobile-mascot-box" id="zona-pizza">
-                <div class="mascot-header">🍕 ¡Juega conmigo! 🍕</div>
-                <img src="https://i.ibb.co/t5LD1t9/Gemini-Generated-Image-288sif288sif288s-1.png" alt="Gemini-Generated-Image-288sif288sif288s-1" border="0">
+                <div class="mascot-header">🍬 ¡Toca para antojos! 🍬</div>
+                <img src="https://i.ibb.co/t5LD1t9/Gemini-Generated-Image-288sif288sif288s-1.png" alt="Mascota GIANNEXPRESS" border="0">
+                <span class="combo-tag" id="combo-tag"></span>
             </div>
         </main>
 
         <!-- 3D VIEWER VISIBLE SOLO EN PC -->
         <aside class="mascot-3d-container" id="zona-velitas">
-            <div class="mascot-header">✨ ¡Juega conmigo! ✨</div>
+            <div class="mascot-header">🍬 ¡Toca para antojos! 🍬</div>
             <spline-viewer url="https://prod.spline.design/eHd4R46Xychllw19/scene.splinecode"></spline-viewer>
         </aside>
     </div>
 
+    <!-- TICKET GANADOR DE LA RULETA -->
+    <div class="ticket-overlay" id="ticket-overlay" onclick="cerrarTicket(event)">
+        <div class="ticket-popup">
+            <button class="ticket-cerrar" onclick="cerrarTicket(event)">✕</button>
+            <div class="ticket-eyebrow" id="ticket-codigo">SLOT --</div>
+            <div class="ticket-nombre" id="ticket-nombre">—</div>
+            <div class="ticket-precio" id="ticket-precio">—</div>
+            <a href="#" target="_blank" class="ticket-cta" id="ticket-cta">Pedir por WhatsApp 🛵</a>
+        </div>
+    </div>
+
     <script>
         const SPREADSHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRLe8TRDdLCgjXBQf5jL3jN1e_CugqqcyFRxT9VO-uyKL05-avxObnclS809ZzMM6imAVWkN_rfkmTT/pub?output=csv";
-        const TELEFONO_DELIVERY = "51972898388"; 
+        const TELEFONO_DELIVERY = "51972898388";
 
         let productos = [];
 
@@ -688,12 +859,23 @@
             "¿Aprobaste un Control de Cambio? Te mereces un premio."
         ];
 
-        document.getElementById('random-quote').textContent = `"${frasesOficina[Math.floor(Math.random() * frasesOficina.length)]}"`;
+        document.getElementById('random-quote').textContent = frasesOficina[Math.floor(Math.random() * frasesOficina.length)];
 
         setInterval(() => {
-            const variacion = Math.floor(Math.random() * 5) + 2; 
+            const variacion = Math.floor(Math.random() * 5) + 2;
             document.getElementById('live-count').textContent = variacion;
         }, 6000);
+
+        function generarCodigoSlot(index) {
+            const fila = String.fromCharCode(65 + Math.floor(index / 6));
+            const col = (index % 6) + 1;
+            return fila + col;
+        }
+
+        function armarMensajeWhatsapp(producto) {
+            const texto = `¡Hola! Me dio un antojo de oficina 🍫. Quiero comprar: *${producto.nombre}* (S/ ${producto.precio}). ¿Me lo traes?`;
+            return `https://wa.me/${TELEFONO_DELIVERY}?text=${encodeURIComponent(texto)}`;
+        }
 
         async function cargarStock() {
             try {
@@ -702,7 +884,7 @@
                 if (!response.ok) throw new Error("Respuesta no OK: " + response.status);
 
                 const csv = await response.text();
-                const filas = csv.split("\n").slice(1); 
+                const filas = csv.split("\n").slice(1);
 
                 productos = filas
                     .map(fila => {
@@ -719,11 +901,12 @@
                     .filter(p => p !== undefined && p.nombre !== "");
 
                 renderizarProductos(productos);
+                mostrarAntojoDelDia();
                 const ahora = new Date();
                 document.getElementById('ultimo-update').textContent = "Actualizado: " + ahora.toLocaleTimeString('es-PE');
             } catch (err) {
                 console.error("Error al cargar inventario:", err);
-                if(productos.length === 0) {
+                if (productos.length === 0) {
                     document.getElementById('tienda-container').innerHTML =
                         '<div class="msg-error"><p>No se pudo leer el inventario.</p><p>Reintentando en 1 minuto...</p></div>';
                 }
@@ -739,26 +922,32 @@
                 return;
             }
 
-            lista.forEach((prod) => {
+            lista.forEach((prod, index) => {
                 const agotado = prod.stock <= 0;
                 const pocoStock = prod.stock > 0 && prod.stock <= 3;
-                
+
                 const card = document.createElement(agotado ? 'div' : 'a');
                 card.className = "card " + (agotado ? "card-agotado" : "card-disponible");
                 card.setAttribute('data-id', prod.id);
-                
+
                 if (!agotado) {
-                    const mensajeText = `¡Hola! Me dio un antojo de oficina 🍫. Quiero comprar: *${prod.nombre}* (S/ ${prod.precio}). ¿Me lo traes?`;
-                    card.href = `https://wa.me/${TELEFONO_DELIVERY}?text=${encodeURIComponent(mensajeText)}`;
-                    card.target = "_blank"; 
+                    card.href = armarMensajeWhatsapp(prod);
+                    card.target = "_blank";
                 }
-                
-                let stockText = `Stock: <strong>${prod.stock}</strong>`;
+
+                let barraClase = "";
+                let anchoBarra = Math.min(100, Math.round((prod.stock / 10) * 100));
+                if (prod.stock > 0 && prod.stock <= 3) barraClase = "low";
+                else if (prod.stock > 3 && prod.stock <= 6) barraClase = "mid";
+
+                let stockText = `Stock: <strong>${prod.stock}</strong> un.`;
                 if (pocoStock) {
-                    stockText = `<strong class="stock-urgente">¡VUELA! (${prod.stock} un.)</strong>`;
+                    stockText = `<span class="stock-urgente">¡VUELA! quedan ${prod.stock}</span>`;
                 }
 
                 card.innerHTML =
+                    '<span class="slot-code">' + generarCodigoSlot(index) + '</span>' +
+                    (agotado ? '<span class="stamp-agotado">AGOTADO</span>' : '') +
                     '<div>' +
                         '<div class="card-name">' + prod.nombre + '</div>' +
                         '<div class="card-price">S/ ' + prod.precio + '</div>' +
@@ -767,10 +956,37 @@
                         '<span class="badge ' + (agotado ? 'badge-no' : 'badge-si') + '">' +
                             (agotado ? 'Agotado' : '¡Pedir aquí!') +
                         '</span>' +
+                        (agotado ? '' :
+                            '<div class="stock-bar-wrap"><div class="stock-bar-fill ' + barraClase + '" style="width:' + anchoBarra + '%"></div></div>'
+                        ) +
                         '<span class="card-stock">' + stockText + '</span>' +
                     '</div>';
                 container.appendChild(card);
             });
+        }
+
+        function mostrarAntojoDelDia() {
+            const disponibles = productos.filter(p => p.stock > 0);
+            const banner = document.getElementById('antojo-dia');
+            if (disponibles.length === 0) { banner.style.display = "none"; return; }
+
+            const diaDelAno = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+            const elegido = disponibles[diaDelAno % disponibles.length];
+
+            banner.dataset.id = elegido.id;
+            document.getElementById('antojo-dia-nombre').textContent = elegido.nombre;
+            document.getElementById('antojo-dia-precio').textContent = "S/ " + elegido.precio;
+            banner.style.display = "flex";
+        }
+
+        function irAlAntojoDelDia() {
+            const id = document.getElementById('antojo-dia').dataset.id;
+            const tarjeta = document.querySelector('.card[data-id="' + id + '"]');
+            if (tarjeta) {
+                tarjeta.classList.add('card-highlight');
+                tarjeta.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => tarjeta.classList.remove('card-highlight'), 1500);
+            }
         }
 
         function elegirAlAzar() {
@@ -781,7 +997,7 @@
             renderizarProductos(productos);
 
             let pasadas = 0;
-            const totalPasadas = 12; 
+            const totalPasadas = 14;
             const tarjetas = document.querySelectorAll('.card-disponible');
 
             const intervalo = setInterval(() => {
@@ -794,30 +1010,47 @@
                     clearInterval(intervalo);
                     const elegido = disponibles[Math.floor(Math.random() * disponibles.length)];
                     tarjetas.forEach(t => t.classList.remove('card-highlight'));
-                    
+
                     const tarjetaGanadora = Array.from(tarjetas).find(t => t.getAttribute('data-id') === elegido.id);
                     if (tarjetaGanadora) {
                         tarjetaGanadora.classList.add('card-highlight');
                         tarjetaGanadora.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
+                    setTimeout(() => mostrarTicketGanador(elegido), 350);
                 }
-            }, 120);
+            }, 110);
+        }
+
+        function mostrarTicketGanador(producto) {
+            const index = productos.findIndex(p => p.id === producto.id);
+            document.getElementById('ticket-codigo').textContent = "SLOT " + generarCodigoSlot(index >= 0 ? index : 0);
+            document.getElementById('ticket-nombre').textContent = producto.nombre;
+            document.getElementById('ticket-precio').textContent = "S/ " + producto.precio;
+            document.getElementById('ticket-cta').href = armarMensajeWhatsapp(producto);
+            document.getElementById('ticket-overlay').classList.add('activo');
+        }
+
+        function cerrarTicket(e) {
+            if (e.target.id === 'ticket-overlay' || e.target.classList.contains('ticket-cerrar')) {
+                document.getElementById('ticket-overlay').classList.remove('activo');
+            }
         }
 
         function celebrarDelivery(elemento) {
             elemento.style.animationPlayState = 'paused';
             setTimeout(() => elemento.style.animationPlayState = 'running', 2000);
+            lanzarConfeti(elemento.getBoundingClientRect());
+        }
 
-            const rect = elemento.getBoundingClientRect();
-            const colores = ['#7C3AED', '#A855F7', '#DB2777', '#06B6D4', '#FFDE4D'];
-
+        function lanzarConfeti(rect) {
+            const colores = ['#2E1A3D', '#FF5A4E', '#FFB627', '#1FA98A'];
             for (let i = 0; i < 30; i++) {
                 const confeti = document.createElement('div');
                 confeti.className = 'confetti';
                 confeti.style.left = `${rect.left + rect.width / 2}px`;
                 confeti.style.top = `${rect.top}px`;
                 confeti.style.backgroundColor = colores[Math.floor(Math.random() * colores.length)];
-                
+
                 const x = (Math.random() - 0.5) * 250;
                 const y = -(Math.random() * 150 + 50);
                 confeti.style.setProperty('--x', `${x}px`);
@@ -828,22 +1061,33 @@
             }
         }
 
-        let contadorPizzas = 0;
-        
-        function registrarClickPizza(e) {
-            contadorPizzas++;
+        let contadorAntojos = 0;
+        const hitosCombo = [5, 10, 20, 30];
+
+        function registrarClickAntojo(e) {
+            contadorAntojos++;
             const popup = document.createElement('div');
             popup.className = 'vela-flotante';
-            const textoPizza = contadorPizzas === 1 ? "+1 pizza" : `+${contadorPizzas} pizzas`;
-            popup.innerHTML = `🍕 ${textoPizza} 🧀`;
+            const texto = contadorAntojos === 1 ? "+1 antojo" : `+${contadorAntojos} antojos`;
+            popup.innerHTML = `🍬 ${texto}`;
             popup.style.left = `${e.clientX}px`;
             popup.style.top = `${e.clientY}px`;
             document.body.appendChild(popup);
-            setTimeout(() => popup.remove(), 1800);
+            setTimeout(() => popup.remove(), 1600);
+
+            const comboTag = document.getElementById('combo-tag');
+            if (comboTag) {
+                if (hitosCombo.includes(contadorAntojos)) {
+                    comboTag.textContent = "¡Racha de " + contadorAntojos + "! 🔥";
+                    lanzarConfeti(e.target.getBoundingClientRect ? e.target.getBoundingClientRect() : { left: e.clientX, top: e.clientY, width: 0 });
+                } else {
+                    comboTag.textContent = contadorAntojos + " clics de antojo";
+                }
+            }
         }
 
-        document.getElementById('zona-pizza').addEventListener('pointerdown', registrarClickPizza);
-        document.getElementById('zona-velitas').addEventListener('pointerdown', registrarClickPizza);
+        document.getElementById('zona-pizza').addEventListener('pointerdown', registrarClickAntojo);
+        document.getElementById('zona-velitas').addEventListener('pointerdown', registrarClickAntojo);
 
         document.getElementById('buscador').addEventListener('input', function(e) {
             const term = e.target.value.toLowerCase();
