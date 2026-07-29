@@ -72,6 +72,91 @@
             background:
                 radial-gradient(circle at 9px 0, transparent 9px, var(--plum) 9.5px) repeat-x;
             background-size: 26px 18px;
+            z-index: 2;
+        }
+
+        /* brillo diagonal que recorre el cartel, como vitrina de dulcería */
+        header::before {
+            content: "";
+            position: absolute;
+            top: 0; left: -60%;
+            width: 35%; height: 100%;
+            background: linear-gradient(115deg, transparent, rgba(255,255,255,0.22), transparent);
+            animation: shimmerSweep 5.5s ease-in-out infinite;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        @keyframes shimmerSweep {
+            0%   { left: -60%; }
+            38%  { left: 130%; }
+            100% { left: 130%; }
+        }
+
+        header h1, header p { position: relative; z-index: 2; }
+
+        /* destellos y anillos mágicos de fondo */
+        .header-fx {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .ring {
+            position: absolute;
+            border: 2px solid var(--marigold);
+            border-radius: 50%;
+            opacity: 0;
+            animation: ringExpand 3.4s ease-out infinite;
+        }
+        .ring-1 { width: 30px; height: 30px; top: 22%; left: 14%; animation-delay: 0s; border-color: var(--marigold); }
+        .ring-2 { width: 22px; height: 22px; top: 55%; right: 18%; animation-delay: 1.1s; border-color: var(--coral); }
+        .ring-3 { width: 36px; height: 36px; bottom: 12%; left: 32%; animation-delay: 2.2s; border-color: var(--cream); }
+
+        @keyframes ringExpand {
+            0%   { transform: scale(0.3); opacity: 0.55; }
+            70%  { opacity: 0.15; }
+            100% { transform: scale(2.2); opacity: 0; }
+        }
+
+        .sparkle {
+            position: absolute;
+            line-height: 1;
+            opacity: 0;
+            animation: sparkleTwinkle 2.6s ease-in-out infinite;
+            text-shadow: 0 0 6px currentColor;
+        }
+        .sparkle-1 { top: 18%; left: 22%; color: var(--marigold); font-size: 1rem; animation-delay: 0s; }
+        .sparkle-2 { top: 65%; left: 10%; color: var(--cream); font-size: 0.7rem; animation-delay: 0.5s; }
+        .sparkle-3 { top: 30%; right: 16%; color: var(--coral); font-size: 0.9rem; animation-delay: 1s; }
+        .sparkle-4 { top: 70%; right: 24%; color: var(--marigold); font-size: 0.65rem; animation-delay: 1.5s; }
+        .sparkle-5 { top: 45%; left: 42%; color: var(--cream); font-size: 0.75rem; animation-delay: 2s; }
+        .sparkle-6 { top: 15%; right: 38%; color: var(--coral); font-size: 0.6rem; animation-delay: 2.5s; }
+
+        @keyframes sparkleTwinkle {
+            0%, 100% { opacity: 0; transform: scale(0.4) rotate(0deg); }
+            50%      { opacity: 1; transform: scale(1.15) rotate(20deg); }
+        }
+
+        /* papel picado de caramelo cayendo despacio detrás del título */
+        .candy-drop {
+            position: absolute;
+            opacity: 0;
+            font-size: 0.9rem;
+            animation: candyFall linear infinite;
+        }
+        .candy-1 { left: 8%;  font-size: 0.85rem; animation-duration: 8s; animation-delay: 0s; }
+        .candy-2 { left: 28%; font-size: 0.65rem; animation-duration: 9.5s; animation-delay: 2.4s; }
+        .candy-3 { left: 62%; font-size: 0.75rem; animation-duration: 7.5s; animation-delay: 1.1s; }
+        .candy-4 { left: 84%; font-size: 0.6rem;  animation-duration: 10s; animation-delay: 3.6s; }
+
+        @keyframes candyFall {
+            0%   { top: -12%; opacity: 0; transform: rotate(-10deg); }
+            12%  { opacity: 0.4; }
+            88%  { opacity: 0.35; }
+            100% { top: 115%; opacity: 0; transform: rotate(30deg); }
         }
 
         header h1 {
@@ -749,9 +834,11 @@
         /* ── RESPETA MOVIMIENTO REDUCIDO ── */
         @media (prefers-reduced-motion: reduce) {
             .pulse-dot, .delivery-mascot, .delivery-mascot img, .delivery-bubble,
-            .card-highlight, .stock-urgente, .ticket-popup {
+            .card-highlight, .stock-urgente, .ticket-popup,
+            header::before, .ring, .sparkle, .candy-drop {
                 animation: none !important;
             }
+            .ring, .sparkle, .candy-drop { display: none; }
         }
     </style>
 </head>
@@ -763,6 +850,21 @@
     </div>
 
     <header>
+        <div class="header-fx" aria-hidden="true">
+            <span class="ring ring-1"></span>
+            <span class="ring ring-2"></span>
+            <span class="ring ring-3"></span>
+            <span class="sparkle sparkle-1">✦</span>
+            <span class="sparkle sparkle-2">✧</span>
+            <span class="sparkle sparkle-3">✦</span>
+            <span class="sparkle sparkle-4">✧</span>
+            <span class="sparkle sparkle-5">✦</span>
+            <span class="sparkle sparkle-6">✧</span>
+            <span class="candy-drop candy-1">🍬</span>
+            <span class="candy-drop candy-2">🍭</span>
+            <span class="candy-drop candy-3">🍫</span>
+            <span class="candy-drop candy-4">🍬</span>
+        </div>
         <h1>GIANNEXPRESS⚡</h1>
         <p>Stock de la oficina &mdash; en tiempo real</p>
     </header>
