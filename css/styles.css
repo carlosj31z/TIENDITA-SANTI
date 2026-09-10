@@ -340,54 +340,6 @@ main {
     letter-spacing: 0.04em;
 }
 
-/* ── DESCARGAR APP ── */
-.app-banner {
-    background: var(--plum);
-    border-radius: 1rem;
-    padding: 1rem 1.1rem;
-    margin: 0 0 1rem;
-}
-.app-banner-title {
-    font-family: 'Baloo 2', cursive;
-    font-weight: 700;
-    font-size: 0.92rem;
-    color: var(--cream);
-    margin-bottom: 0.7rem;
-}
-.app-banner-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
-.app-banner-btn {
-    flex: 1;
-    min-width: 140px;
-    text-align: center;
-    padding: 0.65rem 0.9rem;
-    border-radius: 0.6rem;
-    font-family: 'Manrope', sans-serif;
-    font-weight: 800;
-    font-size: 0.78rem;
-    text-decoration: none;
-    cursor: pointer;
-    background: var(--marigold);
-    color: var(--plum);
-    border: none;
-    transition: transform 0.1s ease;
-}
-.app-banner-btn:active { transform: scale(0.96); }
-.app-banner-btn-ghost {
-    background: transparent;
-    color: var(--cream);
-    border: 1.5px solid var(--cream);
-}
-.app-banner-ios {
-    display: none;
-    margin-top: 0.75rem;
-    padding-top: 0.75rem;
-    border-top: 1px dashed rgba(251,241,224,0.35);
-    font-size: 0.76rem;
-    line-height: 1.5;
-    color: var(--cream);
-}
-.app-banner-ios.activo { display: block; }
-
 /* ── SEARCH & TOOLS: teclado de pedido ── */
 .search-wrap {
     padding: 0.75rem 0 0.5rem;

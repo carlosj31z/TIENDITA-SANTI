@@ -26,5 +26,16 @@ ios/DerivedData/
 android/app/src/main/assets/public/
 ios/App/App/public/
 
+# admin-app/ (panel admin empaquetado como app aparte)
+admin-app/www/
+admin-app/node_modules/
+admin-app/android/app/build/
+admin-app/android/build/
+admin-app/android/.gradle/
+admin-app/android/local.properties
+admin-app/android/captures/
+admin-app/android/app/release/
+admin-app/android/app/src/main/assets/public/
+
 # OS/editor
 .DS_Store
