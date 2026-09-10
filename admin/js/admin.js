@@ -35,8 +35,43 @@ function toast(msg){
   t.classList.add('show');
   clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('show'), 2400);
 }
-function openModal(id){ $(id).classList.add('active'); }
-function closeModals(){ document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('active')); }
+/* ============================================================
+   HOJAS / MODALES — varias formas de salir, no sólo "Cancelar":
+   botón atrás (Android o del navegador), tocar fuera de la hoja,
+   o tocar la rayita gris de arriba. Se apilan (la hoja de recorte
+   de foto se abre encima de la del producto) usando el historial
+   del navegador para que el botón atrás cierre de a una.
+   ============================================================ */
+let modalStack = [];
+
+function openModal(id){
+  if(id === 'modalAjustes') loadInvSettings();
+  $(id).classList.add('active');
+  modalStack.push(id);
+  history.pushState({ gxModal: id }, '');
+}
+/** Cierra sólo la hoja de encima (botón atrás, tocar fuera, tocar la rayita). */
+function closeTopModal(){
+  if(!modalStack.length) return;
+  const id = modalStack.pop();
+  const el = document.getElementById(id);
+  if(el) el.classList.remove('active');
+}
+/** Cierra todo lo que esté abierto (botones "Cancelar" / acciones que ya cerraban todo). */
+function closeModals(){
+  const n = modalStack.length;
+  modalStack.length = 0;
+  document.querySelectorAll('.overlay.active').forEach(o => o.classList.remove('active'));
+  if(n > 0) history.go(-n);
+}
+window.addEventListener('popstate', () => { closeTopModal(); });
+document.addEventListener('click', e => {
+  const t = e.target;
+  if(!t.classList) return;
+  if((t.classList.contains('overlay') && t.classList.contains('active')) || t.classList.contains('sheet-handle')){
+    history.back();
+  }
+});
 function errMsg(err){ return (err && err.message) ? err.message : 'Ocurrió un error'; }
 
 /* ============================================================
@@ -203,7 +238,7 @@ function openClientModal(client){
   $('inputNombre').value = client ? client.nombre : '';
   $('inputTelefono').value = client ? (client.telefono||'') : '';
   openModal('modalCliente');
-  setTimeout(()=>$('inputNombre').focus(), 250);
+  setTimeout(()=>{ const el=$('inputNombre'); if(el) el.focus(); }, 250);
 }
 async function saveClient(){
   const nombre = $('inputNombre').value.trim();
@@ -580,6 +615,16 @@ $('btnManual').addEventListener('click', ()=>{
 });
 $('manualCode').addEventListener('keypress', e=>{ if(e.key==='Enter') $('btnManual').click(); });
 
+$('cropCanvas').addEventListener('pointerdown', cropPointerDown);
+$('cropCanvas').addEventListener('pointermove', cropPointerMove);
+$('cropCanvas').addEventListener('pointerup', cropPointerUp);
+$('cropCanvas').addEventListener('pointercancel', cropPointerUp);
+$('cropZoom').addEventListener('input', e=>{
+  cropScale = cropMinScale * (Number(e.target.value) / 100);
+  clampCropOffset();
+  drawCrop();
+});
+
 async function handleScan(code){
   const now = Date.now();
   if(code===lastScannedCode && now-lastScanTime<2500) return;
@@ -604,11 +649,85 @@ function imgPreviewHTML(url){
   return url ? `<img src="${esc(url)}">` : placeholderIcon;
 }
 function onProductImageFile(e){
-  const f = e.target.files[0]; if(!f) return;
-  pendingImageFile = f;
+  const f = e.target.files[0];
+  e.target.value = ''; // permite elegir el mismo archivo dos veces seguidas
+  if(!f) return;
+  openCropTool(f);
+}
+
+/* ---------- RECORTAR / CENTRAR LA FOTO ---------- */
+const CROP_SIZE = 640; // resolución del recorte cuadrado que se sube
+let cropImage = null;
+let cropScale = 1, cropMinScale = 1, cropOffsetX = 0, cropOffsetY = 0;
+let cropDragging = false, cropLastX = 0, cropLastY = 0;
+
+function openCropTool(file){
   const reader = new FileReader();
-  reader.onload = () => { const prev = $('imgPreview'); if(prev) prev.innerHTML = `<img src="${reader.result}">`; };
-  reader.readAsDataURL(f);
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      cropImage = img;
+      cropMinScale = Math.max(CROP_SIZE / img.width, CROP_SIZE / img.height);
+      cropScale = cropMinScale;
+      cropOffsetX = 0; cropOffsetY = 0;
+      $('cropZoom').value = 100;
+      drawCrop();
+      openModal('modalCrop');
+    };
+    img.onerror = () => toast('No se pudo abrir esa imagen');
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function drawCrop(){
+  if(!cropImage) return;
+  const canvas = $('cropCanvas');
+  canvas.width = CROP_SIZE; canvas.height = CROP_SIZE;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#F7F4F8';
+  ctx.fillRect(0, 0, CROP_SIZE, CROP_SIZE);
+  const w = cropImage.width * cropScale;
+  const h = cropImage.height * cropScale;
+  const x = (CROP_SIZE - w) / 2 + cropOffsetX;
+  const y = (CROP_SIZE - h) / 2 + cropOffsetY;
+  ctx.drawImage(cropImage, x, y, w, h);
+}
+
+function clampCropOffset(){
+  const w = cropImage.width * cropScale;
+  const h = cropImage.height * cropScale;
+  const maxX = Math.max(0, (w - CROP_SIZE) / 2);
+  const maxY = Math.max(0, (h - CROP_SIZE) / 2);
+  cropOffsetX = Math.max(-maxX, Math.min(maxX, cropOffsetX));
+  cropOffsetY = Math.max(-maxY, Math.min(maxY, cropOffsetY));
+}
+
+function cropPointerDown(e){
+  cropDragging = true;
+  cropLastX = e.clientX; cropLastY = e.clientY;
+  e.target.setPointerCapture(e.pointerId);
+}
+function cropPointerMove(e){
+  if(!cropDragging) return;
+  const canvas = $('cropCanvas');
+  const ratio = CROP_SIZE / canvas.clientWidth;
+  cropOffsetX += (e.clientX - cropLastX) * ratio;
+  cropOffsetY += (e.clientY - cropLastY) * ratio;
+  cropLastX = e.clientX; cropLastY = e.clientY;
+  clampCropOffset();
+  drawCrop();
+}
+function cropPointerUp(){ cropDragging = false; }
+
+async function confirmCrop(){
+  const canvas = $('cropCanvas');
+  const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+  if(!blob) return toast('No se pudo procesar la foto');
+  pendingImageFile = new File([blob], 'producto.jpg', { type: 'image/jpeg' });
+  const prev = $('imgPreview');
+  if(prev) prev.innerHTML = `<img src="${URL.createObjectURL(blob)}">`;
+  history.back(); // el popstate cierra sólo la hoja de recorte, la de producto sigue abierta
 }
 async function uploadProductImage(file, code){
   const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
@@ -643,20 +762,31 @@ async function openProductSheet(code){
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
         Sumar al inventario
       </button>
-      <button class="btn btn-ghost btn-full" style="margin-top:9px" onclick="editProductFromSheet('${esc(code)}')">Editar producto</button>
+      <div class="btn-row">
+        <button class="btn btn-soft" onclick="editProductFromSheet('${esc(code)}')">Editar producto</button>
+        <button class="btn btn-soft" onclick="rescan()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>
+          Volver a escanear
+        </button>
+      </div>
     `;
-    setTimeout(()=>$('addQty').focus(), 350);
+    setTimeout(()=>{ const el=$('addQty'); if(el) el.focus(); }, 350);
   }else{
     content.innerHTML = `
       <div class="sheet-head-prod">
         <div style="flex:1">
-          <div class="code-chip"><span class="dot"></span>${esc(code)}</div>
+          <div class="code-chip"><span class="dot"></span>Código escaneado</div>
           <div class="name">Producto nuevo</div>
           <div class="stock-line">Este código no está registrado. Ponle nombre, precio, foto y stock inicial.</div>
         </div>
         <button class="icon-btn" onclick="closeModals()" aria-label="Cerrar">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
         </button>
+      </div>
+      <div class="field">
+        <label>Código de barras</label>
+        <input type="text" id="newCode" value="${esc(code)}" inputmode="numeric">
+        <div class="hint">¿Se leyó mal? Corrígelo aquí o vuelve a escanear.</div>
       </div>
       <div class="img-upload">
         <div class="preview" id="imgPreview">${imgPreviewHTML(null)}</div>
@@ -672,21 +802,34 @@ async function openProductSheet(code){
         <div class="field"><label>Stock inicial</label><input type="number" id="newQty" value="1" min="1" inputmode="numeric"></div>
       </div>
       <div class="field"><label>Categoría</label><input type="text" id="newCategoria" placeholder="Ej: Snacks, Bebidas…" value="General"></div>
-      <button class="btn btn-fiado btn-full" onclick="createProduct('${esc(code)}')">
+      <button class="btn btn-fiado btn-full" onclick="createProduct()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
         Crear producto
       </button>
+      <button class="btn btn-ghost btn-full" style="margin-top:9px" onclick="rescan()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>
+        Volver a escanear
+      </button>
     `;
-    setTimeout(()=>$('newName').focus(), 350);
+    setTimeout(()=>{ const el=$('newName'); if(el) el.focus(); }, 350);
   }
   openModal('modalProducto');
 }
 
-async function createProduct(code){
+/** Cierra la hoja de producto y reactiva la cámara para escanear otro código. */
+function rescan(){
+  lastScannedCode = null;
+  closeModals();
+  switchSubTab('scan');
+}
+
+async function createProduct(){
+  const code = $('newCode').value.trim();
   const nombre = $('newName').value.trim();
   const precio = r2($('newPrice').value);
   const qty = parseInt($('newQty').value) || 1;
   const categoria = ($('newCategoria').value || '').trim() || 'General';
+  if(!code) return toast('Falta el código de barras');
   if(!nombre) return toast('Ponle un nombre al producto');
   if(isNaN(precio) || precio < 0) return toast('Precio inválido');
 
@@ -750,7 +893,7 @@ async function editProductFromSheet(code){
     <button class="btn btn-danger btn-full" style="margin-top:9px" onclick="deleteProductFromSheet('${esc(code)}')">Eliminar producto</button>
   `;
   openModal('modalProducto');
-  setTimeout(()=>$('editStock').focus(), 350);
+  setTimeout(()=>{ const el=$('editStock'); if(el) el.focus(); }, 350);
 }
 
 async function saveProductEdit(code){
@@ -975,8 +1118,6 @@ async function renderCaja(){
    AJUSTES
    ============================================================ */
 async function loadInvSettings(){ $('settingMinStock').value = (await invSettings()).minStock; }
-const origOpen = openModal;
-openModal = function(id){ if(id==='modalAjustes') loadInvSettings(); origOpen(id); };
 
 /* ============================================================
    TIEMPO REAL — refleja al instante cambios hechos desde otro
