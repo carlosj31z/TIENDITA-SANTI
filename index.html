@@ -4,14 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>GIANNEXPRESS⚡🍫</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2E1A3D">
+    <link rel="icon" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="GIANNEXPRESS">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Manrope:wght@500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
-    <!-- LIBRERÍA SPLINE (Mascota 3D - Solo carga en escritorio) -->
-    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.12.98/build/spline-viewer.js"></script>
-
     <link rel="stylesheet" href="css/styles.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 
@@ -90,20 +98,7 @@
             <div id="tienda-container">
                 <p class="msg-loading">Cargando el carrito de antojos...</p>
             </div>
-
-            <!-- IMAGEN PNG VISIBLE SOLO EN MÓVIL -->
-            <div class="mobile-mascot-box" id="zona-pizza">
-                <div class="mascot-header">🍬 ¡Toca para antojos! 🍬</div>
-                <img src="https://i.ibb.co/t5LD1t9/Gemini-Generated-Image-288sif288sif288s-1.png" alt="Mascota GIANNEXPRESS" border="0">
-                <span class="combo-tag" id="combo-tag"></span>
-            </div>
         </main>
-
-        <!-- 3D VIEWER VISIBLE SOLO EN PC -->
-        <aside class="mascot-3d-container" id="zona-velitas">
-            <div class="mascot-header">🍬 ¡Toca para antojos! 🍬</div>
-            <spline-viewer url="https://prod.spline.design/eHd4R46Xychllw19/scene.splinecode"></spline-viewer>
-        </aside>
     </div>
 
     <!-- TICKET GANADOR DE LA RULETA -->
@@ -117,6 +112,7 @@
         </div>
     </div>
 
+    <script src="js/supabaseClient.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>

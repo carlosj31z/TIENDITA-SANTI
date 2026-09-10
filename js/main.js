@@ -1,4 +1,3 @@
-const SPREADSHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRLe8TRDdLCgjXBQf5jL3jN1e_CugqqcyFRxT9VO-uyKL05-avxObnclS809ZzMM6imAVWkN_rfkmTT/pub?output=csv";
 const TELEFONO_DELIVERY = "51972898388";
 
 let productos = [];
@@ -32,26 +31,20 @@ function armarMensajeWhatsapp(producto) {
 
 async function cargarStock() {
     try {
-        const urlSinCache = SPREADSHEET_CSV_URL + "&t=" + new Date().getTime();
-        const response = await fetch(urlSinCache);
-        if (!response.ok) throw new Error("Respuesta no OK: " + response.status);
+        const { data, error } = await supabaseClient
+            .from('productos')
+            .select('id, nombre, precio, stock, imagen_url, categoria')
+            .order('nombre');
+        if (error) throw error;
 
-        const csv = await response.text();
-        const filas = csv.split("\n").slice(1);
-
-        productos = filas
-            .map(fila => {
-                const cols = fila.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                if (cols.length >= 3) {
-                    return {
-                        id: Math.random().toString(36).substring(2, 9),
-                        nombre: cols[0].replace(/"/g, '').trim(),
-                        precio: cols[1].replace(/"/g, '').trim(),
-                        stock:  parseInt(cols[2].replace(/"/g, '').trim()) || 0
-                    };
-                }
-            })
-            .filter(p => p !== undefined && p.nombre !== "");
+        productos = (data || []).map(p => ({
+            id: String(p.id),
+            nombre: p.nombre,
+            precio: Number(p.precio).toFixed(2),
+            stock: p.stock || 0,
+            imagen: p.imagen_url || null,
+            categoria: p.categoria || 'General'
+        }));
 
         renderizarProductos(productos);
         mostrarAntojoDelDia();
@@ -214,34 +207,6 @@ function lanzarConfeti(rect) {
     }
 }
 
-let contadorAntojos = 0;
-const hitosCombo = [5, 10, 20, 30];
-
-function registrarClickAntojo(e) {
-    contadorAntojos++;
-    const popup = document.createElement('div');
-    popup.className = 'vela-flotante';
-    const texto = contadorAntojos === 1 ? "+1 antojo" : `+${contadorAntojos} antojos`;
-    popup.innerHTML = `🍬 ${texto}`;
-    popup.style.left = `${e.clientX}px`;
-    popup.style.top = `${e.clientY}px`;
-    document.body.appendChild(popup);
-    setTimeout(() => popup.remove(), 1600);
-
-    const comboTag = document.getElementById('combo-tag');
-    if (comboTag) {
-        if (hitosCombo.includes(contadorAntojos)) {
-            comboTag.textContent = "¡Racha de " + contadorAntojos + "! 🔥";
-            lanzarConfeti(e.target.getBoundingClientRect ? e.target.getBoundingClientRect() : { left: e.clientX, top: e.clientY, width: 0 });
-        } else {
-            comboTag.textContent = contadorAntojos + " clics de antojo";
-        }
-    }
-}
-
-document.getElementById('zona-pizza').addEventListener('pointerdown', registrarClickAntojo);
-document.getElementById('zona-velitas').addEventListener('pointerdown', registrarClickAntojo);
-
 document.getElementById('buscador').addEventListener('input', function(e) {
     const term = e.target.value.toLowerCase();
     renderizarProductos(productos.filter(p => p.nombre.toLowerCase().includes(term)));
@@ -249,3 +214,9 @@ document.getElementById('buscador').addEventListener('input', function(e) {
 
 cargarStock();
 setInterval(cargarStock, 60000);
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(err => console.error('SW error:', err));
+    });
+}

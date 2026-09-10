@@ -1,0 +1,15 @@
+{
+  "name": "GIANNEXPRESS",
+  "short_name": "GIANNEXPRESS",
+  "description": "Stock de la oficina en tiempo real",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F6EFE3",
+  "theme_color": "#2E1A3D",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
