@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#F6EFE3">
+<meta name="robots" content="noindex, nofollow">
+<title>GIANNEXPRESS · Admin</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500;1,9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="css/admin.css">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body>
+
+<!-- ============ PANTALLA DE ACCESO ============ -->
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-card">
+    <div class="lock-icon">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+    </div>
+    <h1>Panel GIANNEXPRESS</h1>
+    <p>Ingresa la contraseña de administrador para gestionar cobros, inventario y caja.</p>
+    <input type="password" id="lockPassword" placeholder="Contraseña" autocomplete="off" inputmode="text">
+    <div class="lock-error" id="lockError"></div>
+    <button onclick="tryUnlock()">Entrar</button>
+  </div>
+</div>
+
+<div class="app hidden" id="app">
+
+  <header class="appbar">
+    <div>
+      <div class="brand">GIANN<em>EXPRESS</em></div>
+      <svg class="brand-swirl" width="118" height="9" viewBox="0 0 118 9" fill="none">
+        <path d="M2 6c18-5 34 3 54-1s42-2 60 1" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+      <div class="greeting" id="greetingLine"></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="icon-btn hidden" id="btnSettings" onclick="openModal('modalAjustes')" aria-label="Ajustes">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+          <path d="M4 7h16M4 12h16M4 17h16"/>
+          <circle cx="15" cy="7" r="2.4" fill="var(--surface)"/>
+          <circle cx="9" cy="12" r="2.4" fill="var(--surface)"/>
+          <circle cx="17" cy="17" r="2.4" fill="var(--surface)"/>
+        </svg>
+      </button>
+      <button class="icon-btn" onclick="lockApp()" aria-label="Cerrar sesión" title="Cerrar sesión">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============ MÓDULO 1: COBROS ============ -->
+    <section id="view-cobros" class="view">
+      <div class="hero">
+        <div class="hero-label">Total por cobrar</div>
+        <div class="hero-amount" id="heroAmount">S/ 0<small>.00</small></div>
+        <div class="hero-meta">
+          <span><i class="dot-caramel"></i><span id="heroDebtors">0</span>&nbsp;deben</span>
+          <span><i class="dot-verde"></i><span id="heroClients">0</span>&nbsp;clientes</span>
+        </div>
+      </div>
+      <div class="search">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input type="text" id="searchInput" placeholder="Buscar cliente…" oninput="renderCobros()">
+      </div>
+      <div class="section-title">Clientes <span class="count" id="clientCount"></span></div>
+      <div id="listaClientes"></div>
+    </section>
+
+    <!-- ============ MÓDULO 2: INVENTARIO ============ -->
+    <section id="view-inventario" class="view hidden">
+      <div class="sub-nav">
+        <button class="sub-tab active" data-sub="scan" onclick="switchSubTab('scan')">Escanear</button>
+        <button class="sub-tab" data-sub="list" onclick="switchSubTab('list')">Lista</button>
+        <button class="sub-tab" data-sub="hist" onclick="switchSubTab('hist')">Historial</button>
+      </div>
+
+      <!-- Sub-vista: Escanear -->
+      <div id="sub-scan">
+        <div class="inv-hero">
+          <div class="pill"><span class="dot"></span>Inventario activo</div>
+          <div class="greet" id="invGreet">Listo para reponer</div>
+          <div class="inv-num" id="invNum">0</div>
+          <div class="inv-num-lbl">Unidades en inventario</div>
+          <div class="inv-sub" id="invSub">0 productos registrados</div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div class="icon-wrap">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/>
+                <circle cx="12" cy="13" r="3.5"/>
+              </svg>
+            </div>
+            <div class="title">Escanea el producto</div>
+          </div>
+
+          <div class="scanner">
+            <div id="reader"></div>
+            <div class="scan-overlay" id="scanOverlay">
+              <div class="scan-frame" id="scanFrame">
+                <div class="corner c-tl"></div><div class="corner c-tr"></div>
+                <div class="corner c-bl"></div><div class="corner c-br"></div>
+                <div class="scan-beam"></div>
+              </div>
+            </div>
+            <div class="scan-placeholder" id="scanPlaceholder">
+              <div class="big">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/>
+                  <circle cx="12" cy="13" r="3.5"/>
+                </svg>
+              </div>
+              <div class="txt" id="scanPlTxt">Preparando la cámara</div>
+              <div class="hint" id="scanPlHint">Un segundo…</div>
+            </div>
+          </div>
+
+          <div class="scan-status" id="scanStatus">Apunta al código de barras del producto</div>
+
+          <div class="btn-row" style="margin-top:12px">
+            <button class="btn btn-soft" id="btnToggleScanner">
+              <svg id="toggleIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="6" y="5" width="4" height="14" rx="1"/>
+                <rect x="14" y="5" width="4" height="14" rx="1"/>
+              </svg>
+              <span id="toggleText">Pausar</span>
+            </button>
+          </div>
+
+          <div class="divider">o escríbelo a mano</div>
+          <div class="manual-row">
+            <input type="text" id="manualCode" placeholder="7751234567890" inputmode="numeric">
+            <button id="btnManual">Ir</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub-vista: Lista -->
+      <div id="sub-list" class="hidden">
+        <div class="stats">
+          <div class="stat"><div class="num" id="statTotal">0</div><div class="lbl">Productos</div></div>
+          <div class="stat"><div class="num" id="statUnits">0</div><div class="lbl">Unidades</div></div>
+          <div class="stat"><div class="num" id="statLow">0</div><div class="lbl">Reponer</div></div>
+        </div>
+        <div class="search">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input type="text" id="searchProduct" placeholder="Buscar por nombre o código" oninput="renderProductList()">
+        </div>
+        <div id="productList"></div>
+      </div>
+
+      <!-- Sub-vista: Historial -->
+      <div id="sub-hist" class="hidden">
+        <div class="card" style="padding:14px">
+          <div id="invHistoryList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ MÓDULO 3: CAJA ============ -->
+    <section id="view-caja" class="view hidden">
+      <div class="day-nav">
+        <button class="day-btn" onclick="cambiarDia(-1)" aria-label="Día anterior">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <div class="day-label" id="cajaFecha">Hoy</div>
+        <button class="day-btn" id="dayNext" onclick="cambiarDia(1)" aria-label="Día siguiente">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <div class="hero" style="margin:12px 0 0">
+        <div class="hero-label" id="cajaLabel">Vendido hoy</div>
+        <div class="hero-amount" id="cajaVendido">S/ 0<small>.00</small></div>
+        <div class="hero-meta">
+          <span><i class="dot-caramel"></i><span id="cajaMetaVentas">0</span>&nbsp;ventas</span>
+          <span><i class="dot-verde"></i><span id="cajaMetaCobros">0</span>&nbsp;cobros</span>
+        </div>
+      </div>
+
+      <div class="stat-duo">
+        <div class="stat-card">
+          <span class="stat-lbl">Entró a caja</span>
+          <span class="stat-val verde" id="cajaCobrado">S/ 0.00</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-lbl" id="cajaFaltaLbl">Falta p/ completar caja</span>
+          <span class="stat-val caramel" id="cajaFalta">S/ 0.00</span>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top:20px">Resumen semanal y mensual</div>
+      <div class="resumen-card">
+        <div class="resumen-row" id="rowSemana"></div>
+        <div class="resumen-row" id="rowMes"></div>
+      </div>
+
+      <div class="section-title" style="margin-top:22px">Productos del día <span class="count" id="cajaProdCount"></span></div>
+      <div id="cajaProductos"></div>
+
+      <div class="section-title" style="margin-top:22px">Flujo del día</div>
+      <div id="cajaFlujo"></div>
+    </section>
+
+    <!-- ============ VISTA DETALLE CLIENTE ============ -->
+    <section id="view-client" class="view hidden">
+      <div class="detail-head">
+        <button class="back-btn" onclick="goHome()" aria-label="Volver">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <div class="detail-title">
+          <h2 id="detailName">Cliente</h2>
+          <p id="detailPhone"></p>
+        </div>
+        <button class="wa-btn hidden" id="waBtn" aria-label="Enviar mensaje por WhatsApp">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.6a8 8 0 0 1-11.7 7L4 20l1.4-4.1A8 8 0 1 1 20 11.6Z"/><path d="M9.3 9.5c.5 2.7 2.5 4.7 5.2 5.2"/></svg>
+        </button>
+        <button class="edit-btn" onclick="editCurrentClient()" aria-label="Editar cliente">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4L8 20l-5 1 1-5L17 3z"/></svg>
+        </button>
+      </div>
+
+      <div class="balance-card">
+        <div class="lbl">Saldo actual</div>
+        <div class="val" id="detailSaldo">S/ 0.00</div>
+        <div class="sub" id="detailSaldoSub"></div>
+      </div>
+
+      <div class="action-row">
+        <button class="btn btn-fiado" onclick="openSale()">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12H7L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+          Fiar venta
+        </button>
+        <button class="btn btn-pago" onclick="openPago()">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2.5"/><circle cx="12" cy="12" r="2.6"/></svg>
+          Registrar pago
+        </button>
+      </div>
+
+      <div class="section-title">Historial · trazabilidad</div>
+      <div class="timeline-client" id="listaHistorial"></div>
+    </section>
+  </main>
+
+  <nav class="tabbar" id="tabbar">
+    <div class="tab active" id="tab-cobros" onclick="switchTab('cobros')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M7 3.5h9.5A1.5 1.5 0 0 1 18 5v14a1.5 1.5 0 0 1-1.5 1.5H7A2.5 2.5 0 0 1 4.5 18V6A2.5 2.5 0 0 1 7 3.5Z"/>
+        <path d="M8.5 8.5h6M8.5 12.5h6M8.5 16.5h3.5"/>
+      </svg>
+      Cobros
+    </div>
+    <div class="tab" id="tab-inventario" onclick="switchTab('inventario')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 8l8-4 8 4-8 4-8-4z"/>
+        <path d="M4 8v8l8 4 8-4V8"/>
+        <path d="M12 12v8"/>
+      </svg>
+      Inventario
+    </div>
+    <div class="tab" id="tab-caja" onclick="switchTab('caja')">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="10" width="18" height="9" rx="2"/>
+        <path d="M3 10l2.2-5h13.6L21 10"/>
+        <path d="M10 14.5h4"/>
+      </svg>
+      Caja
+    </div>
+  </nav>
+
+  <button class="fab hidden" id="fab" onclick="fabAction()" aria-label="Agregar">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+
+  <!-- ============ MODAL: CLIENTE ============ -->
+  <div class="overlay" id="modalCliente">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <h3 id="clientModalTitle">Nuevo cliente</h3>
+      <p class="sheet-sub">Anota su nombre y número para fiarle con confianza.</p>
+      <div class="field"><label>Nombre</label><input type="text" id="inputNombre" placeholder="Ej. Doña María"></div>
+      <div class="field">
+        <label>Teléfono <span style="color:var(--ink-3);font-weight:500">(para WhatsApp)</span></label>
+        <input type="tel" id="inputTelefono" placeholder="Ej. 987 654 321">
+        <div class="hint">Con número guardado podrás enviarle recordatorios y tus números de cobro.</div>
+      </div>
+      <button class="btn btn-fiado btn-full" onclick="saveClient()">Guardar cliente</button>
+      <button class="btn btn-delete btn-full hidden" id="btnDeleteClient" style="margin-top:9px" onclick="deleteClient()">Eliminar cliente e historial</button>
+      <button class="btn btn-ghost btn-full" style="margin-top:9px" onclick="closeModals()">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: MÉTODOS DE COBRO ============ -->
+  <div class="overlay" id="modalMetodos">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <h3>Métodos de cobro</h3>
+      <p class="sheet-sub">Tus números de billetera o banco. Aparecen en el mensaje de WhatsApp de deuda y en la pantalla de cobro.</p>
+      <div class="metodos-admin" id="metodosAdmin"></div>
+      <div class="field-row" style="margin-top:6px">
+        <div class="field">
+          <label>Sistema / Banco</label>
+          <input type="text" id="inputMetSistema" list="listaSistemas" placeholder="Plin, Yape, BanBif…">
+          <datalist id="listaSistemas">
+            <option value="Plin"></option><option value="Yape"></option><option value="BanBif"></option>
+            <option value="BCP"></option><option value="Interbank"></option><option value="BBVA"></option>
+            <option value="Scotiabank"></option>
+          </datalist>
+        </div>
+        <div class="field"><label>Número / Cuenta</label><input type="tel" id="inputMetNumero" placeholder="987 654 321"></div>
+      </div>
+      <button class="btn btn-fiado btn-full" onclick="addMetodo()">Agregar método</button>
+      <button class="btn btn-ghost btn-full" style="margin-top:9px" onclick="closeModals()">Listo</button>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: AJUSTES INVENTARIO ============ -->
+  <div class="overlay" id="modalAjustes">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <h3>Ajustes de inventario</h3>
+      <p class="sheet-sub">Preferencias del módulo de inventario.</p>
+      <div class="eyebrow">Reposición</div>
+      <div class="settings-group">
+        <div class="settings-row">
+          <div>
+            <div class="label">Stock mínimo</div>
+            <div class="sub">Unidades bajo las cuales marcar como "Reponer"</div>
+          </div>
+          <input type="number" id="settingMinStock" min="1" value="3">
+        </div>
+      </div>
+      <button class="btn btn-fiado btn-full" onclick="saveInvSettings()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+        Guardar ajustes
+      </button>
+      <div class="eyebrow" style="margin-top:18px">Editar método de cobro</div>
+      <button class="btn btn-soft btn-full" onclick="closeModals();setTimeout(()=>openMetodos(),250)">Métodos de cobro</button>
+      <div class="eyebrow" style="margin-top:18px;color:var(--rojo)">Zona delicada</div>
+      <button class="btn btn-danger btn-full" onclick="resetAllInv()">Borrar todo el inventario</button>
+      <button class="btn btn-ghost btn-full" style="margin-top:9px" onclick="closeModals()">Listo</button>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: VENTA ============ -->
+  <div class="overlay" id="modalVenta">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <h3>Fiar venta</h3>
+      <p class="sheet-sub">Toca los productos que se está llevando del inventario.</p>
+      <div class="sale-client-strip">
+        <span class="n" id="saleClientName">Cliente</span>
+        <span class="d" id="saleClientDebt"></span>
+      </div>
+      <div id="saleProductList"></div>
+      <div class="sale-total-bar">
+        <div class="sale-total-line">
+          <span class="t">Total a fiar</span>
+          <span class="v" id="saleTotal">S/ 0.00</span>
+        </div>
+        <button class="btn btn-fiado btn-full" onclick="confirmSale()">Confirmar fiado</button>
+        <button class="btn btn-ghost btn-full" style="margin-top:9px" onclick="closeModals()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: PAGO ============ -->
+  <div class="overlay" id="modalPago">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <h3>Registrar pago</h3>
+      <p class="sheet-sub" id="pagoSub"></p>
+      <div class="field"><label>Monto recibido (S/)</label><input type="number" id="inputMontoPago" step="0.10" min="0" placeholder="0.00" inputmode="decimal"></div>
+      <div class="field"><label>Nota <span style="color:var(--ink-3);font-weight:500">(opcional)</span></label><input type="text" id="inputDescPago" placeholder="Ej. Pago por Plin"></div>
+
+      <div class="qr-divider">Cobro digital</div>
+      <div class="qr-box">
+        <img id="qrImg" class="hidden" alt="QR de pago GIANNEXPRESS">
+        <div class="qr-empty" id="qrEmpty">
+          Aún no has cargado tu QR de cobro.
+          <button class="btn btn-ghost btn-full" onclick="document.getElementById('qrInput').click()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V6M8 9l4-4 4 4"/><path d="M5 16v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2"/></svg>
+            Cargar QR de cobro
+          </button>
+        </div>
+        <div class="qr-caption">GIANNINA ENITH BORJA VEGA<br>El cliente escanea con su app y paga al toque.</div>
+        <div class="metodos-lista" id="metodosLista"></div>
+        <button class="metodos-edit" onclick="closeModals();setTimeout(()=>openMetodos(),250)">Editar métodos de cobro</button>
+        <div class="qr-actions">
+          <button class="btn btn-wa" onclick="shareQRWhatsApp()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.6a8 8 0 0 1-11.7 7L4 20l1.4-4.1A8 8 0 1 1 20 11.6Z"/><path d="M9.3 9.5c.5 2.7 2.5 4.7 5.2 5.2"/></svg>
+            Enviar QR por WhatsApp
+          </button>
+          <button class="icon-btn" style="width:48px;height:48px;border-radius:14px" onclick="document.getElementById('qrInput').click()" aria-label="Cambiar QR">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4L8 20l-5 1 1-5L17 3z"/></svg>
+          </button>
+        </div>
+        <input type="file" id="qrInput" accept="image/*" hidden onchange="onQRFile(event)">
+      </div>
+
+      <button class="btn btn-pago btn-full" style="margin-top:16px" onclick="confirmPago()">Registrar pago</button>
+      <button class="btn btn-ghost btn-full" style="margin-top:9px" onclick="closeModals()">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: PRODUCTO ESCANEADO (restock / crear / editar) ============ -->
+  <div class="overlay" id="modalProducto">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div id="sheetContent"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script src="../js/supabaseClient.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

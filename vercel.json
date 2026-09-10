@@ -1,0 +1,5 @@
+{
+  "buildCommand": "echo 'Sitio estático: no requiere build. package.json es solo para Capacitor (app móvil).'",
+  "installCommand": "echo 'Sin dependencias necesarias para desplegar el sitio.'",
+  "outputDirectory": "."
+}

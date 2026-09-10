@@ -1,0 +1,20 @@
+{
+  "name": "giannexpress",
+  "version": "1.0.0",
+  "description": "GIANNEXPRESS - tiendita de oficina",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build-www.js",
+    "cap:sync": "npm run build && cap sync",
+    "cap:android": "cap open android",
+    "cap:ios": "cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/core": "^6.1.2",
+    "@capacitor/ios": "^6.1.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2"
+  }
+}
