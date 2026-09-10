@@ -263,7 +263,15 @@ main{ padding:8px 22px 150px; }
 @keyframes fadeIn{ from{opacity:0} to{opacity:1} }
 .sheet{ background:var(--bg); width:100%; max-width:430px; border-radius:28px 28px 0 0; padding:12px 22px calc(26px + env(safe-area-inset-bottom)); max-height:88vh; overflow-y:auto; animation:slideUp .28s cubic-bezier(.32,.72,.24,1); }
 @keyframes slideUp{ from{ transform:translateY(60px); opacity:.5 } to{ transform:translateY(0); opacity:1 } }
-.sheet-handle{ width:42px; height:5px; border-radius:99px; background:var(--line); margin:4px auto 18px; }
+/* La rayita se ve fina pero su zona táctil es ancha: ::before la extiende
+   de lado a lado, así se puede tocar o deslizar sin apuntar al pixel. */
+.sheet-handle{ position:relative; width:44px; height:5px; border-radius:99px; background:var(--line); margin:8px auto 18px; cursor:grab; touch-action:none; }
+.sheet-handle::before{ content:''; position:absolute; left:-22px; right:-22px; top:-16px; bottom:-16px; }
+.sheet-handle:active{ background:var(--ink-3); cursor:grabbing; }
+
+.code-edit{ display:flex; gap:9px; align-items:center; }
+.code-edit input{ flex:1; min-width:0; }
+.code-edit .btn{ flex-shrink:0; padding:12px 13px; }
 .sheet h3{ font-family:'Fraunces',serif; font-size:22px; font-weight:600; letter-spacing:-.3px; margin-bottom:4px; }
 .sheet .sheet-sub{ font-size:13px; color:var(--ink-2); margin-bottom:18px; }
 .field{ margin-bottom:15px; }
