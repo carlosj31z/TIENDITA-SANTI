@@ -1,27 +1,32 @@
 :root{
-  --bg:#F6EFE3; --surface:#FFFDF8; --surface-2:#FBF5EA;
-  --ink:#2E2318; --ink-2:#6E5D4B; --ink-3:#A8977F; --line:#EADFCB;
-  --caramel:#B9552E; --caramel-2:#A64A27; --caramel-bg:#F6E3D7;
+  --bg:#F6F4F7; --surface:#FFFFFF; --surface-2:#F7F4F8;
+  --ink:#241A28; --ink-2:#645A6C; --ink-3:#9E95A6; --line:#E9E4EC;
+  /* El acento del panel usa el magenta de la marca. Los nombres de
+     variable se mantienen para no tocar las ~90 reglas que los usan. */
+  --magenta:#A32A90;
+  --caramel:#A32A90; --caramel-2:#841F74; --caramel-bg:#FAECF7;
   --honey:#C98A2D; --honey-bg:#F7EBD3;
-  --verde:#4C7A5A; --verde-bg:#E4EFE2;
+  --verde:#1DA97F; --verde-bg:#E2F4EE;
   --rojo:#C2452F; --rojo-bg:#F9E3DC;
   --wa:#1EBE5D;
   --radius:18px;
-  --shadow:0 12px 32px -14px rgba(94,64,40,.28);
-  --shadow-sm:0 4px 14px -6px rgba(94,64,40,.18);
-  --shadow-caramel:0 10px 24px -10px rgba(185,85,46,.55);
+  --shadow:0 12px 32px -14px rgba(40,25,45,.24);
+  --shadow-sm:0 4px 14px -6px rgba(40,25,45,.16);
+  --shadow-caramel:0 10px 24px -10px rgba(163,42,144,.55);
   --ease:cubic-bezier(.32,.72,.24,1);
 }
 *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
 html,body{ height:100%; }
-body{ font-family:'Plus Jakarta Sans',sans-serif; background:linear-gradient(180deg,#F8F2E7 0%,#F3EBDB 100%); color:var(--ink); -webkit-font-smoothing:antialiased; }
+body{ font-family:'Plus Jakarta Sans',sans-serif; background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased; }
 .app{ max-width:430px; margin:0 auto; min-height:100vh; position:relative; }
 
 /* ============ HEADER ============ */
 .appbar{ padding:26px 22px 8px; display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
-.brand{ font-family:'Fraunces',serif; font-size:27px; font-weight:700; letter-spacing:-.6px; color:var(--ink); line-height:1; }
-.brand em{ font-style:normal; color:var(--caramel); }
-.brand-swirl{ display:block; margin-top:6px; color:var(--caramel); opacity:.85; }
+.brand{ display:inline-flex; align-items:flex-start; gap:2px; color:var(--magenta); line-height:1; }
+.brand-img{ height:22px; width:auto; }
+.brand-text{ display:inline-flex; align-items:flex-start; gap:2px; }
+.brand-word{ font-family:'Archivo Black','Arial Black','Helvetica Neue',system-ui,sans-serif; font-size:21px; letter-spacing:-.035em; transform:skewX(-10deg); transform-origin:left bottom; display:inline-block; }
+.brand-plus{ font-family:'Plus Jakarta Sans',sans-serif; font-weight:800; font-size:.62em; color:#fff; background:var(--magenta); border-radius:5px; width:1.15em; height:1.15em; display:inline-flex; align-items:center; justify-content:center; margin-top:-.15em; flex-shrink:0; }
 .greeting{ margin-top:9px; line-height:1.2; }
 .greet-word{ font-family:'Fraunces',serif; font-style:italic; font-weight:600; font-size:19px; color:var(--caramel); }
 .greet-date{ font-size:13px; color:var(--ink-2); font-weight:600; }

@@ -1,6 +1,6 @@
 {
   "appId": "pe.giannexpress.admin",
-  "appName": "GIANNEXPRESS Admin",
+  "appName": "Mañana Te Pago",
   "webDir": "www",
   "server": {
     "androidScheme": "https"

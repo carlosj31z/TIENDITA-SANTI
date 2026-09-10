@@ -8,7 +8,7 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const OUT = path.join(ROOT, 'www');
 
-const ITEMS = ['index.html', 'css', 'js', 'manifest.json', 'sw.js', 'icons'];
+const ITEMS = ['index.html', 'css', 'js', 'manifest.json', 'sw.js', 'icons', 'brand'];
 
 function copyRecursive(src, dest) {
   const stat = fs.statSync(src);

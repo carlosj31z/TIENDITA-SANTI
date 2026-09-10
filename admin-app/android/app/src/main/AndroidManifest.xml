@@ -35,7 +35,29 @@
         </provider>
     </application>
 
-    <!-- Permissions -->
+    <!-- Permisos -->
 
+    <!-- Conexión con Supabase -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Escáner de códigos de barras del módulo de inventario -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- Elegir fotos de producto y el QR de cobro desde la galería -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
+    <!-- Vibración al confirmar un escaneo -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- La cámara no es obligatoria: sin ella el inventario sigue funcionando
+         con el ingreso manual del código. -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 </manifest>

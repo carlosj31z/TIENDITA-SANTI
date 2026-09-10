@@ -2,20 +2,20 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GIANNEXPRESS⚡🍫</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>GIANNEXPRESS · Tu antojo, al toque</title>
 
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2E1A3D">
+    <meta name="theme-color" content="#FFFFFF">
     <link rel="icon" href="icons/icon-192.png">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="GIANNEXPRESS">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Manrope:wght@500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="css/styles.css">
 
@@ -23,98 +23,193 @@
 </head>
 <body>
 
-    <div class="delivery-mascot" title="¡Hacemos delivery!" onclick="celebrarDelivery(this)">
-        <div class="delivery-bubble">🛵 ¡Hacemos delivery!</div>
-        <img src="https://i.pinimg.com/originals/b3/19/9c/b3199c4fe56fc8a60be65d7a72579815.gif" alt="Delivery disponible">
-    </div>
+<header class="topbar" id="topbar">
+    <div class="topbar-main">
+        <a class="brand" href="./" aria-label="GIANNEXPRESS">
+            <img class="brand-img" src="brand/logo.png" alt="GIANNEXPRESS">
+            <span class="brand-text" hidden><span class="brand-word">GIANNEXPRESS</span><span class="brand-plus" aria-hidden="true">+</span></span>
+        </a>
 
-    <header>
-        <div class="header-fx" aria-hidden="true">
-            <span class="ring ring-1"></span>
-            <span class="ring ring-2"></span>
-            <span class="ring ring-3"></span>
-            <span class="sparkle sparkle-1">✦</span>
-            <span class="sparkle sparkle-2">✧</span>
-            <span class="sparkle sparkle-3">✦</span>
-            <span class="sparkle sparkle-4">✧</span>
-            <span class="sparkle sparkle-5">✦</span>
-            <span class="sparkle sparkle-6">✧</span>
-            <span class="candy-drop candy-1">🍬</span>
-            <span class="candy-drop candy-2">🍭</span>
-            <span class="candy-drop candy-3">🍫</span>
-            <span class="candy-drop candy-4">🍬</span>
-        </div>
-        <h1>GIANNEXPRESS⚡</h1>
-        <p>Stock de la oficina &mdash; en tiempo real</p>
-    </header>
-
-    <div class="layout-wrapper">
-        <main>
-            <div class="live-stats">
-                <span class="pulse-dot"></span>
-                <strong id="live-count">4</strong>&nbsp;personas de la oficina están revisando el stock ahora mismo...
-            </div>
-
-            <div class="search-wrap">
-                <div class="search-row">
-                    <input type="text" id="buscador" placeholder="Busca tu antojo favorito..." autocomplete="off" spellcheck="false">
-                    <button class="btn-random" onclick="elegirAlAzar()">🎰 Ruleta</button>
-                </div>
-            </div>
-
-            <div class="category-pills" id="category-pills"></div>
-
-            <span id="ultimo-update"></span>
-
-            <div id="tienda-container">
-                <p class="msg-loading">Cargando el carrito de antojos...</p>
-            </div>
-
-            <div class="office-quote" id="random-quote">
-                ¿Estresado por sacar adelante ese pendiente? ¿Reuniones sin fin? El dulce cura el alma.
-            </div>
-
-            <button class="antojo-dia" id="antojo-dia" style="display:none;" onclick="irAlAntojoDelDia()">
-                <span class="antojo-dia-badge">🔥 Del día</span>
-                <span class="antojo-dia-info">
-                    <span class="antojo-dia-nombre" id="antojo-dia-nombre">Cargando...</span>
-                    <span class="antojo-dia-precio" id="antojo-dia-precio"></span>
-                </span>
-                <span class="antojo-dia-flecha">→</span>
+        <div class="topbar-actions">
+            <button class="icon-action" id="btn-search" aria-label="Buscar producto">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20.5 20.5 17 17"/></svg>
             </button>
-
-            <div class="payment-banner">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/0/08/Icono_de_la_aplicaci%C3%B3n_Yape.png" alt="Medios de pago aceptados" class="payment-photo">
-                <div class="payment-info">
-                    <div class="payment-title">Medios de pago aceptados</div>
-                    <div class="payment-methods">
-                        <div class="payment-method">
-                            <div class="payment-icon icon-cash">$</div>
-                            <span>Efectivo</span>
-                        </div>
-                        <div class="payment-method">
-                            <div class="payment-icon icon-yape">Y</div>
-                            <span>Yape</span>
-                        </div>
-                    </div>
-                    <div class="payment-note">¡Paga como prefieras!</div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- TICKET GANADOR DE LA RULETA -->
-    <div class="ticket-overlay" id="ticket-overlay" onclick="cerrarTicket(event)">
-        <div class="ticket-popup">
-            <button class="ticket-cerrar" onclick="cerrarTicket(event)">✕</button>
-            <div class="ticket-eyebrow" id="ticket-codigo">SLOT --</div>
-            <div class="ticket-nombre" id="ticket-nombre">—</div>
-            <div class="ticket-precio" id="ticket-precio">—</div>
-            <a href="#" target="_blank" class="ticket-cta" id="ticket-cta">Pedir por WhatsApp 🛵</a>
+            <button class="icon-action" id="btn-ruleta" aria-label="Ruleta de antojos" title="Ruleta de antojos">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/><circle cx="8.75" cy="8.75" r="1.35" fill="currentColor" stroke="none"/><circle cx="15.25" cy="15.25" r="1.35" fill="currentColor" stroke="none"/><circle cx="15.25" cy="8.75" r="1.35" fill="currentColor" stroke="none"/></svg>
+            </button>
+            <button class="icon-action" id="btn-cart" aria-label="Ver mi pedido">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 11.5a1.5 1.5 0 0 1-1.5 1.4h-9A1.5 1.5 0 0 1 5 19.5Z"/><path d="M9 8.5V6.7a3 3 0 0 1 6 0v1.8"/></svg>
+                <span class="cart-dot" id="cart-dot" hidden>0</span>
+            </button>
         </div>
     </div>
 
-    <script src="js/supabaseClient.js"></script>
-    <script src="js/main.js"></script>
+    <div class="topbar-sub">
+        <button class="menu-btn" id="btn-menu" aria-label="Ver categorías">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <button class="place-pill" id="btn-place">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z"/><circle cx="12" cy="10" r="2.6"/></svg>
+            <span>¿Cómo te lo llevamos?</span>
+            <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+    </div>
+
+    <div class="search-wrap" id="search-wrap" hidden>
+        <div class="search-field">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20.5 20.5 17 17"/></svg>
+            <input type="text" id="buscador" placeholder="¿Qué se te antoja hoy?" autocomplete="off" spellcheck="false">
+            <button class="search-clear" id="search-clear" aria-label="Limpiar búsqueda">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <nav class="cat-rail" id="cat-rail" aria-label="Categorías"></nav>
+</header>
+
+<main>
+    <section class="promo" id="promo" hidden>
+        <div class="promo-copy">
+            <span class="promo-kicker">🔥 El antojo del día</span>
+            <h2 class="promo-name" id="promo-name">—</h2>
+            <span class="promo-price" id="promo-price"></span>
+        </div>
+        <button class="promo-cta" id="promo-cta">Lo quiero</button>
+        <div class="promo-live">
+            <span class="pulse-dot"></span><strong id="live-count">4</strong>&nbsp;viendo el stock ahora
+        </div>
+    </section>
+
+    <div id="tienda-container">
+        <div class="skeleton-wrap">
+            <div class="skeleton-row"></div>
+            <div class="skeleton-grid">
+                <div class="sk-card"></div><div class="sk-card"></div><div class="sk-card"></div><div class="sk-card"></div>
+            </div>
+        </div>
+    </div>
+
+    <p class="update-line" id="ultimo-update"></p>
+</main>
+
+<footer class="footer">
+    <div class="footer-inner">
+        <div class="brand brand-footer" aria-hidden="true">
+            <img class="brand-img" src="brand/logo.png" alt="">
+            <span class="brand-text" hidden><span class="brand-word">GIANNEXPRESS</span><span class="brand-plus">+</span></span>
+        </div>
+        <p class="footer-quote" id="random-quote">El dulce cura el alma.</p>
+        <div class="pay-row">
+            <span class="pay-chip"><i class="pay-ico pay-cash">S/</i>Efectivo</span>
+            <span class="pay-chip"><i class="pay-ico pay-yape">Y</i>Yape</span>
+            <span class="pay-chip"><i class="pay-ico pay-plin">P</i>Plin</span>
+        </div>
+        <p class="footer-note">Stock de la oficina en tiempo real · Pedidos por WhatsApp</p>
+    </div>
+</footer>
+
+<div class="cart-bar" id="cart-bar" hidden>
+    <button class="cart-bar-btn" id="cart-bar-btn">
+        <span class="cart-bar-count" id="cart-bar-count">0</span>
+        <span class="cart-bar-label">Ver mi pedido</span>
+        <span class="cart-bar-total" id="cart-bar-total">S/ 0.00</span>
+    </button>
+</div>
+
+<div class="sheet-overlay" id="sheet-cart" hidden>
+    <div class="sheet">
+        <div class="sheet-grip"></div>
+        <div class="sheet-head">
+            <h2>Mi pedido</h2>
+            <button class="sheet-close" data-close aria-label="Cerrar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </button>
+        </div>
+        <div class="cart-items" id="cart-items"></div>
+        <div class="cart-foot">
+            <div class="cart-total-row">
+                <span>Total</span>
+                <strong id="cart-total">S/ 0.00</strong>
+            </div>
+            <button class="btn-wa" id="btn-checkout">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.6a8 8 0 0 1-11.7 7L4 20l1.4-4.1A8 8 0 1 1 20 11.6Z"/><path d="M9.3 9.5c.5 2.7 2.5 4.7 5.2 5.2"/></svg>
+                Pedir por WhatsApp
+            </button>
+            <button class="btn-ghost" id="btn-clear-cart">Vaciar pedido</button>
+        </div>
+    </div>
+</div>
+
+<div class="sheet-overlay" id="sheet-menu" hidden>
+    <div class="sheet">
+        <div class="sheet-grip"></div>
+        <div class="sheet-head">
+            <h2>Categorías</h2>
+            <button class="sheet-close" data-close aria-label="Cerrar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </button>
+        </div>
+        <div class="menu-list" id="menu-list"></div>
+    </div>
+</div>
+
+<div class="sheet-overlay" id="sheet-place" hidden>
+    <div class="sheet">
+        <div class="sheet-grip"></div>
+        <div class="sheet-head">
+            <h2>¿Cómo te lo llevamos?</h2>
+            <button class="sheet-close" data-close aria-label="Cerrar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+            </button>
+        </div>
+        <div class="place-opts">
+            <div class="place-opt">
+                <span class="place-emoji">🛵</span>
+                <div>
+                    <strong>Delivery a tu escritorio</strong>
+                    <span>Lo llevamos apenas confirmes por WhatsApp.</span>
+                </div>
+            </div>
+            <div class="place-opt">
+                <span class="place-emoji">🏃</span>
+                <div>
+                    <strong>Lo recojo yo</strong>
+                    <span>Pasa por la tiendita y te lo entregamos al toque.</span>
+                </div>
+            </div>
+            <div class="place-opt">
+                <span class="place-emoji">💳</span>
+                <div>
+                    <strong>Pagas como prefieras</strong>
+                    <span>Efectivo, Yape o Plin. Sin vueltas.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="sheet-overlay ticket-overlay" id="ticket-overlay" hidden>
+    <div class="ticket">
+        <button class="sheet-close ticket-close" data-close aria-label="Cerrar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+        <span class="ticket-kicker">La ruleta eligió</span>
+        <div class="ticket-media" id="ticket-media"></div>
+        <h2 class="ticket-name" id="ticket-nombre">—</h2>
+        <span class="ticket-price" id="ticket-precio">—</span>
+        <button class="ticket-cta" id="ticket-cta">Agregar a mi pedido</button>
+    </div>
+</div>
+
+<div class="delivery-mascot" id="delivery-mascot" title="¡Hacemos delivery!">
+    <span class="delivery-bubble">🛵 ¡Hacemos delivery!</span>
+    <img src="https://i.pinimg.com/originals/b3/19/9c/b3199c4fe56fc8a60be65d7a72579815.gif" alt="" aria-hidden="true">
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="js/supabaseClient.js"></script>
+<script src="js/main.js"></script>
 </body>
 </html>
