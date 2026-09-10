@@ -297,8 +297,19 @@ main{ padding:8px 22px 150px; }
 /* ============ RECORTAR FOTO ============ */
 .crop-stage{
   position:relative; width:100%; aspect-ratio:1/1; max-width:320px; margin:4px auto 14px;
-  border-radius:var(--radius); overflow:hidden; background:var(--surface-2); border:1px solid var(--line);
+  border-radius:var(--radius); overflow:hidden; border:1px solid var(--line);
   touch-action:none;
+  /* Ajedrezado clásico de "transparencia": el canvas ya no pinta un
+     fondo sólido, así que esto deja ver a simple vista qué zonas del
+     recorte van a quedar transparentes de verdad. */
+  background-image:
+    linear-gradient(45deg, var(--surface-2) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--surface-2) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--surface-2) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--surface-2) 75%);
+  background-size:16px 16px;
+  background-position:0 0, 0 8px, 8px -8px, -8px 0px;
+  background-color:var(--bg);
 }
 .crop-stage canvas{ width:100%; height:100%; display:block; cursor:grab; }
 .crop-stage canvas:active{ cursor:grabbing; }
