@@ -1010,6 +1010,20 @@ function setupRealtime(){
     .subscribe();
 }
 
+/* Si aún no se subió brand/logo.png, se muestra el wordmark tipográfico. */
+function activarRespaldoDeLogo() {
+    document.querySelectorAll('.brand-img').forEach(img => {
+        const usarTexto = () => {
+            img.hidden = true;
+            const texto = img.parentElement.querySelector('.brand-text');
+            if (texto) texto.hidden = false;
+        };
+        img.addEventListener('error', usarTexto);
+        if (img.complete && img.naturalWidth === 0) usarTexto();
+    });
+}
+activarRespaldoDeLogo();
+
 /* ============================================================
    INIT
    ============================================================ */

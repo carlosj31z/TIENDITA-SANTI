@@ -1,4 +1,4 @@
-const CACHE_NAME = 'giannexpress-v1';
+const CACHE_NAME = 'giannexpress-v2';
 const APP_SHELL = [
   './',
   './index.html',

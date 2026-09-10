@@ -1,4 +1,4 @@
-name: Build Admin APK
+name: Build "Mañana Te Pago" APK
 
 on:
   push:
@@ -33,6 +33,17 @@ jobs:
         working-directory: admin-app
         run: npm ci
 
+      - name: Regenerar el ícono si hay una imagen de marca
+        run: |
+          SRC=$(ls brand/app-icon-source.* 2>/dev/null | head -1 || true)
+          if [ -n "$SRC" ]; then
+            echo "Usando $SRC como ícono de la app."
+            python3 -m pip install --quiet --disable-pip-version-check pillow
+            python3 scripts/make-app-icons.py "$SRC"
+          else
+            echo "Sin brand/app-icon-source.*: se usa el ícono ilustrado versionado."
+          fi
+
       - name: Build admin web assets (admin-app/www/)
         working-directory: admin-app
         run: npm run build
@@ -57,30 +68,30 @@ jobs:
           ./gradlew assembleDebug --no-daemon
 
       - name: Rename APK
-        run: cp admin-app/android/app/build/outputs/apk/debug/app-debug.apk giannexpress-admin.apk
+        run: cp admin-app/android/app/build/outputs/apk/debug/app-debug.apk manana-te-pago.apk
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: giannexpress-admin-apk
-          path: giannexpress-admin.apk
+          name: manana-te-pago-apk
+          path: manana-te-pago.apk
 
       - name: Publish/update "android-admin-latest" release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: android-admin-latest
-          name: "GIANNEXPRESS Admin · Android (última versión)"
+          name: "Mañana Te Pago · Android (última versión)"
           body: |
-            APK del panel de Cobros, Inventario y Caja, generado
-            automáticamente desde la rama `main`. No requiere Play Store.
-            Se conecta a la misma base de Supabase que la versión web,
-            en tiempo real.
+            App "Mañana Te Pago": Cobros, Inventario y Caja de
+            GIANNEXPRESS. Generada automáticamente desde `main`, no
+            requiere Play Store y se conecta en tiempo real a la misma
+            base de datos que la versión web.
 
-            Instalación: descarga `giannexpress-admin.apk`, ábrelo en el
+            Instalación: descarga `manana-te-pago.apk`, ábrelo en el
             celular y permite "instalar apps de origen desconocido" si
             Android lo pide.
           prerelease: false
           make_latest: false
-          files: giannexpress-admin.apk
+          files: manana-te-pago.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

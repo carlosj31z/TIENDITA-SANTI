@@ -28,8 +28,14 @@ copyRecursive(path.join(ROOT, 'admin', 'js'), path.join(OUT, 'js'));
 fs.mkdirSync(path.join(OUT, 'js'), { recursive: true });
 fs.copyFileSync(path.join(ROOT, 'js', 'supabaseClient.js'), path.join(OUT, 'js', 'supabaseClient.js'));
 
+const brand = path.join(ROOT, 'brand');
+if (fs.existsSync(brand)) copyRecursive(brand, path.join(OUT, 'brand'));
+
 let html = fs.readFileSync(path.join(ROOT, 'admin', 'index.html'), 'utf8');
+// En admin/ los recursos compartidos viven un nivel arriba; dentro del
+// paquete quedan en la raíz.
 html = html.replace('../js/supabaseClient.js', 'js/supabaseClient.js');
+html = html.replace(/\.\.\/brand\//g, 'brand/');
 fs.writeFileSync(path.join(OUT, 'index.html'), html);
 
 console.log('admin-app/www/ generado desde admin/');
