@@ -409,6 +409,25 @@
     </div>
   </div>
 
+  <!-- ============ MODAL: RECORTAR FOTO ============ -->
+  <div class="overlay" id="modalCrop">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <h3>Encuadra la foto</h3>
+      <p class="sheet-sub">Arrastra para centrar el producto y usa el control para acercar.</p>
+      <div class="crop-stage">
+        <canvas id="cropCanvas"></canvas>
+        <div class="crop-ring" aria-hidden="true"></div>
+      </div>
+      <input type="range" id="cropZoom" class="crop-zoom" min="100" max="320" value="100" aria-label="Acercar">
+      <button class="btn btn-fiado btn-full" onclick="confirmCrop()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+        Usar esta foto
+      </button>
+      <button class="btn btn-ghost btn-full" style="margin-top:9px" onclick="history.back()">Cancelar</button>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 </div>
 
