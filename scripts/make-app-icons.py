@@ -118,13 +118,59 @@ def draw_dog(canvas=MASTER * SS):
     return img.resize((MASTER, MASTER), Image.LANCZOS)
 
 
+def border_color(img):
+    """Color del marco de la foto: sirve como fondo del ícono adaptativo."""
+    small = img.convert("RGB").resize((48, 48), Image.LANCZOS)
+    px = small.load()
+    edge = []
+    for i in range(48):
+        edge += [px[i, 0], px[i, 47], px[0, i], px[47, i]]
+    edge.sort(key=lambda c: c[0] + c[1] + c[2])
+    r, g, b = edge[len(edge) // 2]
+    return (r, g, b, 255)
+
+
 def load_photo(path):
-    """Recorta una foto al cuadrado central y la deja lista como ícono."""
+    """Deja la foto cuadrada, recortando el aire sobrante alrededor del sujeto.
+
+    Un ícono adaptativo sólo muestra el 66% central, así que si la foto trae
+    márgenes grandes el sujeto termina diminuto o recortado.
+    """
     img = Image.open(path).convert("RGBA")
-    side = min(img.size)
-    left = (img.width - side) // 2
-    top = (img.height - side) // 2
-    return img.crop((left, top, left + side, top + side)).resize((MASTER, MASTER), Image.LANCZOS)
+    bg = border_color(img)
+
+    flat = Image.new("RGBA", img.size, bg)
+    flat.alpha_composite(img)
+    rgb = flat.convert("RGB")
+
+    # Máscara de "esto no es fondo", con tolerancia generosa para no comerse
+    # sombras suaves del estudio.
+    px = rgb.load()
+    tol = 26
+    cols, rows = [], []
+    for x in range(rgb.width):
+        if any(max(abs(px[x, y][i] - bg[i]) for i in range(3)) > tol
+               for y in range(0, rgb.height, 3)):
+            cols.append(x)
+    for y in range(rgb.height):
+        if any(max(abs(px[x, y][i] - bg[i]) for i in range(3)) > tol
+               for x in range(0, rgb.width, 3)):
+            rows.append(y)
+
+    if cols and rows:
+        pad = int(min(rgb.width, rgb.height) * 0.04)
+        left = max(0, cols[0] - pad)
+        right = min(rgb.width, cols[-1] + pad)
+        top = max(0, rows[0] - pad)
+        bottom = min(rgb.height, rows[-1] + pad)
+        flat = flat.crop((left, top, right, bottom))
+
+    # Volver a cuadrado, rellenando con el mismo fondo de la foto.
+    side = max(flat.size)
+    square = Image.new("RGBA", (side, side), bg)
+    square.alpha_composite(flat, ((side - flat.width) // 2, (side - flat.height) // 2))
+
+    return square.resize((MASTER, MASTER), Image.LANCZOS), bg
 
 
 def compose(subject, size, shape, scale, bg=BG):
@@ -164,12 +210,14 @@ def compose(subject, size, shape, scale, bg=BG):
 def main():
     source = sys.argv[1] if len(sys.argv) > 1 else None
     if source:
-        subject = load_photo(source)
-        # Una foto ya trae su propio fondo: se deja llenar el marco completo.
-        scale_legacy, scale_fg = 1.0, 1.0
+        subject, bg = load_photo(source)
+        # El fondo adaptativo copia el de la foto, así el recorte circular
+        # del launcher no deja bordes que no calcen.
+        scale_legacy, scale_fg = 0.99, 0.74
         print(f"Usando la foto {source} como ícono.")
     else:
         subject = draw_dog()
+        bg = BG
         scale_legacy, scale_fg = 0.94, 0.78
         print("Usando el perrito ilustrado (pasa una ruta de imagen para usar una foto).")
 
@@ -179,13 +227,13 @@ def main():
     for density, (legacy, fg) in DENSITIES.items():
         folder = os.path.join(RES, f"mipmap-{density}")
         os.makedirs(folder, exist_ok=True)
-        compose(subject, legacy, "square", scale_legacy).save(os.path.join(folder, "ic_launcher.png"))
-        compose(subject, legacy, "circle", scale_legacy).save(os.path.join(folder, "ic_launcher_round.png"))
-        compose(subject, fg, "adaptive", scale_fg).save(os.path.join(folder, "ic_launcher_foreground.png"))
+        compose(subject, legacy, "square", scale_legacy, bg).save(os.path.join(folder, "ic_launcher.png"))
+        compose(subject, legacy, "circle", scale_legacy, bg).save(os.path.join(folder, "ic_launcher_round.png"))
+        compose(subject, fg, "adaptive", scale_fg, bg).save(os.path.join(folder, "ic_launcher_foreground.png"))
         print(f"  mipmap-{density}: {legacy}px + foreground {fg}px")
 
     # El fondo del ícono adaptativo tiene que combinar con el arte.
-    bg_hex = "#%02X%02X%02X" % BG[:3]
+    bg_hex = "#%02X%02X%02X" % bg[:3]
     with open(os.path.join(RES, "values", "ic_launcher_background.xml"), "w", encoding="utf-8") as f:
         f.write('<?xml version="1.0" encoding="utf-8"?>\n<resources>\n'
                 f'    <color name="ic_launcher_background">{bg_hex}</color>\n</resources>\n')
