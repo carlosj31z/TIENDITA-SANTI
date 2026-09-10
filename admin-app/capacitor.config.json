@@ -1,0 +1,8 @@
+{
+  "appId": "pe.giannexpress.admin",
+  "appName": "GIANNEXPRESS Admin",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}

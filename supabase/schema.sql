@@ -154,6 +154,40 @@ create policy "qr_bucket_write" on storage.objects
   for all using (bucket_id = 'qr') with check (bucket_id = 'qr');
 
 -- ============================================================
+-- REALTIME — necesario para que el panel admin y la tiendita
+-- reflejen los cambios al instante entre dispositivos, sin
+-- recargar la página. Re-ejecutar este bloque es seguro, no
+-- falla si una tabla ya estaba agregada.
+-- ============================================================
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'productos'
+  ) then
+    alter publication supabase_realtime add table public.productos;
+  end if;
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'clientes'
+  ) then
+    alter publication supabase_realtime add table public.clientes;
+  end if;
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'movimientos'
+  ) then
+    alter publication supabase_realtime add table public.movimientos;
+  end if;
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'inventario_movs'
+  ) then
+    alter publication supabase_realtime add table public.inventario_movs;
+  end if;
+end $$;
+
+-- ============================================================
 -- SEED inicial (mismos productos de ejemplo que tenía el panel local)
 -- Se salta automáticamente si ya hay productos cargados.
 -- ============================================================

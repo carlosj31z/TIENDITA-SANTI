@@ -298,6 +298,13 @@ document.getElementById('buscador').addEventListener('input', function() {
 cargarStock();
 setInterval(cargarStock, 60000);
 
+// Tiempo real: si el stock cambia desde el panel admin, se refleja al
+// instante sin esperar al refresco de 60s.
+supabaseClient
+    .channel('tienda-sync')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'productos' }, () => cargarStock())
+    .subscribe();
+
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js').catch(err => console.error('SW error:', err));

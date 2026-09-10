@@ -1,0 +1,86 @@
+name: Build Admin APK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "admin/**"
+      - "js/supabaseClient.js"
+      - "admin-app/**"
+      - "scripts/build-www-admin.js"
+      - ".github/workflows/build-admin-android.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install root dependencies (Capacitor CLI/core)
+        run: npm ci
+
+      - name: Install admin-app dependencies
+        working-directory: admin-app
+        run: npm ci
+
+      - name: Build admin web assets (admin-app/www/)
+        working-directory: admin-app
+        run: npm run build
+
+      - name: Sync Capacitor Android project
+        working-directory: admin-app
+        run: npx cap sync android
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build debug APK
+        working-directory: admin-app/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Rename APK
+        run: cp admin-app/android/app/build/outputs/apk/debug/app-debug.apk giannexpress-admin.apk
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: giannexpress-admin-apk
+          path: giannexpress-admin.apk
+
+      - name: Publish/update "android-admin-latest" release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-admin-latest
+          name: "GIANNEXPRESS Admin · Android (última versión)"
+          body: |
+            APK del panel de Cobros, Inventario y Caja, generado
+            automáticamente desde la rama `main`. No requiere Play Store.
+            Se conecta a la misma base de Supabase que la versión web,
+            en tiempo real.
+
+            Instalación: descarga `giannexpress-admin.apk`, ábrelo en el
+            celular y permite "instalar apps de origen desconocido" si
+            Android lo pide.
+          prerelease: false
+          make_latest: false
+          files: giannexpress-admin.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

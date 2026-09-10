@@ -1,10 +1,10 @@
 /* ============================================================
    GIANNEXPRESS · Panel admin
    Respaldado 100% en Supabase (productos, clientes, cobros,
-   inventario y caja). Acceso protegido con contraseña fija.
+   inventario y caja). Sin login: quien tenga el enlace /admin/
+   entra directo.
    ============================================================ */
 
-const ADMIN_PASSWORD = "doctec";
 const TIENDA = 'GIANNEXPRESS';
 
 let currentTab = 'cobros';
@@ -38,35 +38,6 @@ function toast(msg){
 function openModal(id){ $(id).classList.add('active'); }
 function closeModals(){ document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('active')); }
 function errMsg(err){ return (err && err.message) ? err.message : 'Ocurrió un error'; }
-
-/* ============================================================
-   ACCESO CON CONTRASEÑA FIJA
-   ============================================================ */
-function tryUnlock(){
-  const pass = $('lockPassword').value;
-  if(pass === ADMIN_PASSWORD){
-    sessionStorage.setItem('gx_admin_ok', '1');
-    $('lockScreen').classList.add('hidden');
-    $('app').classList.remove('hidden');
-    $('lockError').textContent = '';
-    initApp();
-  }else{
-    $('lockError').textContent = 'Contraseña incorrecta';
-    $('lockPassword').value = '';
-    $('lockPassword').focus();
-  }
-}
-function lockApp(){
-  sessionStorage.removeItem('gx_admin_ok');
-  location.reload();
-}
-$('lockPassword').addEventListener('keypress', e=>{ if(e.key==='Enter') tryUnlock(); });
-if(sessionStorage.getItem('gx_admin_ok') === '1'){
-  $('lockScreen').classList.add('hidden');
-  $('app').classList.remove('hidden');
-}else{
-  setTimeout(()=>$('lockPassword').focus(), 200);
-}
 
 /* ============================================================
    SETTINGS (tabla key/value en Supabase)
@@ -148,8 +119,9 @@ function switchTab(tab){
   });
   $('view-client').classList.add('hidden');
   $('tabbar').style.display='flex';
-  $('fab').style.display = (tab==='cobros') ? 'flex' : 'none';
+  $('fab').classList.toggle('hidden', tab!=='cobros');
   $('btnSettings').classList.toggle('hidden', tab!=='inventario');
+  $('btnMetodos').classList.toggle('hidden', tab!=='cobros');
 
   if(tab==='cobros') renderCobros();
   else if(tab==='inventario'){ ensureScannerState(); renderScanHero(); }
@@ -260,8 +232,10 @@ async function openClient(id){
   $('view-inventario').classList.add('hidden');
   $('view-caja').classList.add('hidden');
   $('view-client').classList.remove('hidden');
-  $('tabbar').style.display='none'; $('fab').style.display='none';
+  $('tabbar').style.display='none';
+  $('fab').classList.add('hidden');
   $('btnSettings').classList.add('hidden');
+  $('btnMetodos').classList.add('hidden');
   renderClientDetail(id);
 }
 async function editCurrentClient(){
@@ -775,6 +749,8 @@ async function editProductFromSheet(code){
     </button>
     <button class="btn btn-danger btn-full" style="margin-top:9px" onclick="deleteProductFromSheet('${esc(code)}')">Eliminar producto</button>
   `;
+  openModal('modalProducto');
+  setTimeout(()=>$('editStock').focus(), 350);
 }
 
 async function saveProductEdit(code){
@@ -846,6 +822,9 @@ async function renderProductList(){
           <div class="meta"><span class="chip ${chipCls}">${chipTxt}</span></div>
         </div>
         <div class="qty">${stock}</div>
+        <button class="product-edit-btn" onclick="event.stopPropagation(); editProductFromSheet('${esc(p.code)}')" aria-label="Corregir stock">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4L8 20l-5 1 1-5L17 3z"/></svg>
+        </button>
       </div>`;
   }).join('');
 }
@@ -1000,13 +979,46 @@ const origOpen = openModal;
 openModal = function(id){ if(id==='modalAjustes') loadInvSettings(); origOpen(id); };
 
 /* ============================================================
-   INIT (solo se ejecuta tras desbloquear con la contraseña)
+   TIEMPO REAL — refleja al instante cambios hechos desde otro
+   dispositivo (web o la app), sin recargar la página.
+   ============================================================ */
+function refreshCurrentView(){
+  if(currentClientId){ renderClientDetail(currentClientId); return; }
+  if(currentTab === 'cobros'){ renderCobros(); return; }
+  if(currentTab === 'inventario'){
+    renderScanHero();
+    if(currentSubTab === 'list') renderProductList();
+    else if(currentSubTab === 'hist') renderInvHistory();
+    return;
+  }
+  if(currentTab === 'caja'){ renderCaja(); }
+}
+
+function debounce(fn, ms){
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+}
+const refreshDebounced = debounce(refreshCurrentView, 250);
+
+function setupRealtime(){
+  supabaseClient
+    .channel('admin-sync')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'productos' }, () => { renderScanHero(); refreshDebounced(); })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, refreshDebounced)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'movimientos' }, refreshDebounced)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'inventario_movs' }, refreshDebounced)
+    .subscribe();
+}
+
+/* ============================================================
+   INIT
    ============================================================ */
 function initApp(){
   setDateLine();
-  renderCobros();
+  switchTab('cobros');
   renderScanHero();
   renderProductList();
   renderInvHistory();
+  setupRealtime();
 }
-if(sessionStorage.getItem('gx_admin_ok') === '1') initApp();
+initApp();

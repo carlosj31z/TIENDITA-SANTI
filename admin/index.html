@@ -18,21 +18,7 @@
 </head>
 <body>
 
-<!-- ============ PANTALLA DE ACCESO ============ -->
-<div class="lock-screen" id="lockScreen">
-  <div class="lock-card">
-    <div class="lock-icon">
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
-    </div>
-    <h1>Panel GIANNEXPRESS</h1>
-    <p>Ingresa la contraseña de administrador para gestionar cobros, inventario y caja.</p>
-    <input type="password" id="lockPassword" placeholder="Contraseña" autocomplete="off" inputmode="text">
-    <div class="lock-error" id="lockError"></div>
-    <button onclick="tryUnlock()">Entrar</button>
-  </div>
-</div>
-
-<div class="app hidden" id="app">
+<div class="app" id="app">
 
   <header class="appbar">
     <div>
@@ -43,6 +29,9 @@
       <div class="greeting" id="greetingLine"></div>
     </div>
     <div style="display:flex;gap:8px">
+      <button class="icon-btn hidden" id="btnMetodos" onclick="openMetodos()" aria-label="Métodos de cobro" title="Métodos de cobro">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2.5"/><circle cx="12" cy="12" r="2.6"/></svg>
+      </button>
       <button class="icon-btn hidden" id="btnSettings" onclick="openModal('modalAjustes')" aria-label="Ajustes">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
           <path d="M4 7h16M4 12h16M4 17h16"/>
@@ -51,13 +40,20 @@
           <circle cx="17" cy="17" r="2.4" fill="var(--surface)"/>
         </svg>
       </button>
-      <button class="icon-btn" onclick="lockApp()" aria-label="Cerrar sesión" title="Cerrar sesión">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
-      </button>
     </div>
   </header>
 
   <main>
+    <div class="app-download-banner">
+      <div class="app-download-text">
+        <strong>📲 App del panel</strong>
+        <span>Cobros, Inventario y Caja en tu celular, conectado en tiempo real con esta misma página.</span>
+      </div>
+      <a class="app-download-btn" href="https://github.com/carlosj31z/TIENDITA-SANTI/releases/download/android-admin-latest/giannexpress-admin.apk">
+        Descargar APK
+      </a>
+    </div>
+
     <!-- ============ MÓDULO 1: COBROS ============ -->
     <section id="view-cobros" class="view">
       <div class="hero">
