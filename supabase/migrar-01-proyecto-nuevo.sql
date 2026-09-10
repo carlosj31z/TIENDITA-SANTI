@@ -83,69 +83,46 @@ create trigger productos_set_updated_at
   before update on public.productos
   for each row execute function public.set_updated_at();
 
--- ============================================================
--- ROW LEVEL SECURITY — abierto para anon.
--- El panel admin no usa login real, así que la clave pública
--- necesita poder leer y escribir. Cualquiera con la URL y la
--- anon key (visibles en el código del sitio) puede escribir a
--- la base. Es un riesgo asumido a pedido del dueño.
--- ============================================================
-alter table public.productos enable row level security;
-alter table public.clientes enable row level security;
-alter table public.movimientos enable row level security;
-alter table public.inventario_movs enable row level security;
-alter table public.metodos_pago enable row level security;
-alter table public.settings enable row level security;
+-- ---------- PERMISOS DE LAS TABLAS ----------
+-- El panel admin no usa login real, así que la clave pública necesita
+-- poder leer y escribir. Riesgo asumido a pedido del dueño.
+do $$
+declare t text;
+begin
+  foreach t in array array['productos','clientes','movimientos','inventario_movs','metodos_pago','settings'] loop
+    execute format('alter table public.%I enable row level security', t);
+    execute format('drop policy if exists %I on public.%I', t || '_all', t);
+    execute format('create policy %I on public.%I for all using (true) with check (true)', t || '_all', t);
+  end loop;
+end $$;
 
-drop policy if exists "productos_all" on public.productos;
-create policy "productos_all" on public.productos for all using (true) with check (true);
+-- ---------- STORAGE (tolerante a fallos) ----------
+-- Si esto no se puede hacer por SQL, crea los buckets a mano en
+-- Storage -> New bucket, con los nombres "productos" y "qr", públicos.
+do $$
+begin
+  insert into storage.buckets (id, name, public) values ('productos','productos',true)
+    on conflict (id) do update set public = true;
+  insert into storage.buckets (id, name, public) values ('qr','qr',true)
+    on conflict (id) do update set public = true;
+exception when others then
+  raise notice 'Buckets: no se pudieron crear por SQL (%). Créalos a mano como públicos.', sqlerrm;
+end $$;
 
-drop policy if exists "clientes_all" on public.clientes;
-create policy "clientes_all" on public.clientes for all using (true) with check (true);
+do $$
+declare b text;
+begin
+  foreach b in array array['productos','qr'] loop
+    execute format('drop policy if exists %I on storage.objects', b || '_bucket_read');
+    execute format('create policy %I on storage.objects for select using (bucket_id = %L)', b || '_bucket_read', b);
+    execute format('drop policy if exists %I on storage.objects', b || '_bucket_write');
+    execute format('create policy %I on storage.objects for all using (bucket_id = %L) with check (bucket_id = %L)', b || '_bucket_write', b, b);
+  end loop;
+exception when others then
+  raise notice 'Políticas de Storage: %. Un bucket marcado como público ya permite leer las fotos.', sqlerrm;
+end $$;
 
-drop policy if exists "movimientos_all" on public.movimientos;
-create policy "movimientos_all" on public.movimientos for all using (true) with check (true);
-
-drop policy if exists "inventario_movs_all" on public.inventario_movs;
-create policy "inventario_movs_all" on public.inventario_movs for all using (true) with check (true);
-
-drop policy if exists "metodos_pago_all" on public.metodos_pago;
-create policy "metodos_pago_all" on public.metodos_pago for all using (true) with check (true);
-
-drop policy if exists "settings_all" on public.settings;
-create policy "settings_all" on public.settings for all using (true) with check (true);
-
--- ============================================================
--- STORAGE — buckets públicos para imágenes de producto y QR de cobro
--- ============================================================
-insert into storage.buckets (id, name, public)
-values ('productos', 'productos', true)
-on conflict (id) do nothing;
-
-insert into storage.buckets (id, name, public)
-values ('qr', 'qr', true)
-on conflict (id) do nothing;
-
-drop policy if exists "productos_bucket_read" on storage.objects;
-create policy "productos_bucket_read" on storage.objects
-  for select using (bucket_id = 'productos');
-
-drop policy if exists "productos_bucket_write" on storage.objects;
-create policy "productos_bucket_write" on storage.objects
-  for all using (bucket_id = 'productos') with check (bucket_id = 'productos');
-
-drop policy if exists "qr_bucket_read" on storage.objects;
-create policy "qr_bucket_read" on storage.objects
-  for select using (bucket_id = 'qr');
-
-drop policy if exists "qr_bucket_write" on storage.objects;
-create policy "qr_bucket_write" on storage.objects
-  for all using (bucket_id = 'qr') with check (bucket_id = 'qr');
-
--- ============================================================
--- REALTIME — para que el panel y la tiendita reflejen los
--- cambios al instante entre dispositivos.
--- ============================================================
+-- ---------- TIEMPO REAL ----------
 do $$
 declare t text;
 begin
@@ -157,4 +134,24 @@ begin
       execute format('alter publication supabase_realtime add table public.%I', t);
     end if;
   end loop;
+exception when others then
+  raise notice 'Tiempo real: %. La app igual funciona, sólo tarda en reflejar cambios de otro dispositivo.', sqlerrm;
 end $$;
+
+
+-- ---------- REFRESCAR EL CACHÉ DE LA API ----------
+-- La API guarda en memoria qué tablas existen. Si se creó una tabla y el
+-- caché no se refrescó, la web recibe "Could not find the table in the
+-- schema cache" aunque la tabla esté ahí.
+notify pgrst, 'reload schema';
+
+-- ---------- COMPROBACIÓN ----------
+-- Debe listar las 6 tablas, cada una con permiso abierto.
+select
+  t.table_name as tabla,
+  (select count(*) from pg_policies p
+    where p.schemaname = 'public' and p.tablename = t.table_name) as politicas
+from information_schema.tables t
+where t.table_schema = 'public'
+  and t.table_name in ('productos','clientes','movimientos','inventario_movs','metodos_pago','settings')
+order by t.table_name;

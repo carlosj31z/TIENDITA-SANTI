@@ -5,14 +5,24 @@
 -- 1. Entra a tu proyecto en https://supabase.com/dashboard
 -- 2. Ve a "SQL Editor" -> "New query"
 -- 3. Pega TODO este archivo y dale "Run"
--- 4. Luego ve a "Storage" y confirma que se crearon los buckets
+-- 4. Al final debe listar las 6 tablas. Si no las lista, algo falló.
+-- 5. Luego ve a "Storage" y confirma que se crearon los buckets
 --    "productos" y "qr" (este script los crea, pero si tu plan
 --    no lo permite por SQL, créalos a mano como públicos).
 --
+-- Correrlo dos veces es seguro: no borra ni duplica nada.
+--
+-- POR QUÉ LA PARTE DE STORAGE VA DENTRO DE BLOQUES CON "exception":
+-- el SQL Editor corre todo el script como UNA transacción, así que
+-- una sola instrucción que falle deshace TODO lo anterior, tablas
+-- incluidas. Crear políticas sobre storage.objects es lo que suele
+-- fallar por permisos, y se llevaba puesto el resto sin que se
+-- notara: el script parecía haber corrido y no quedaba nada. Ahora
+-- esa parte avisa y sigue adelante; las tablas quedan creadas.
+--
 -- NOTA DE SEGURIDAD:
--- El panel admin (admin/index.html) se protege con una sola
--- contraseña fija en el navegador, no con un usuario real de
--- Supabase Auth. Por eso las políticas de abajo permiten
+-- El panel admin (admin/index.html) no tiene login real: se entra
+-- sólo con la URL. Por eso las políticas de abajo permiten
 -- lectura y escritura con la clave "anon" (pública) en todas
 -- las tablas: es la única forma de que el panel funcione sin
 -- login real. Esto significa que cualquiera con la URL y la
@@ -98,99 +108,62 @@ create trigger productos_set_updated_at
   before update on public.productos
   for each row execute function public.set_updated_at();
 
--- ============================================================
--- ROW LEVEL SECURITY — abierto para anon (ver nota de seguridad arriba)
--- ============================================================
-alter table public.productos enable row level security;
-alter table public.clientes enable row level security;
-alter table public.movimientos enable row level security;
-alter table public.inventario_movs enable row level security;
-alter table public.metodos_pago enable row level security;
-alter table public.settings enable row level security;
-
-drop policy if exists "productos_all" on public.productos;
-create policy "productos_all" on public.productos for all using (true) with check (true);
-
-drop policy if exists "clientes_all" on public.clientes;
-create policy "clientes_all" on public.clientes for all using (true) with check (true);
-
-drop policy if exists "movimientos_all" on public.movimientos;
-create policy "movimientos_all" on public.movimientos for all using (true) with check (true);
-
-drop policy if exists "inventario_movs_all" on public.inventario_movs;
-create policy "inventario_movs_all" on public.inventario_movs for all using (true) with check (true);
-
-drop policy if exists "metodos_pago_all" on public.metodos_pago;
-create policy "metodos_pago_all" on public.metodos_pago for all using (true) with check (true);
-
-drop policy if exists "settings_all" on public.settings;
-create policy "settings_all" on public.settings for all using (true) with check (true);
-
--- ============================================================
--- STORAGE — buckets públicos para imágenes de producto y QR de cobro
--- ============================================================
-insert into storage.buckets (id, name, public)
-values ('productos', 'productos', true)
-on conflict (id) do nothing;
-
-insert into storage.buckets (id, name, public)
-values ('qr', 'qr', true)
-on conflict (id) do nothing;
-
-drop policy if exists "productos_bucket_read" on storage.objects;
-create policy "productos_bucket_read" on storage.objects
-  for select using (bucket_id = 'productos');
-
-drop policy if exists "productos_bucket_write" on storage.objects;
-create policy "productos_bucket_write" on storage.objects
-  for all using (bucket_id = 'productos') with check (bucket_id = 'productos');
-
-drop policy if exists "qr_bucket_read" on storage.objects;
-create policy "qr_bucket_read" on storage.objects
-  for select using (bucket_id = 'qr');
-
-drop policy if exists "qr_bucket_write" on storage.objects;
-create policy "qr_bucket_write" on storage.objects
-  for all using (bucket_id = 'qr') with check (bucket_id = 'qr');
-
--- ============================================================
--- REALTIME — necesario para que el panel admin y la tiendita
--- reflejen los cambios al instante entre dispositivos, sin
--- recargar la página. Re-ejecutar este bloque es seguro, no
--- falla si una tabla ya estaba agregada.
--- ============================================================
+-- ---------- PERMISOS DE LAS TABLAS ----------
+-- El panel admin no usa login real, así que la clave pública necesita
+-- poder leer y escribir. Riesgo asumido a pedido del dueño.
 do $$
+declare t text;
 begin
-  if not exists (
-    select 1 from pg_publication_tables
-    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'productos'
-  ) then
-    alter publication supabase_realtime add table public.productos;
-  end if;
-  if not exists (
-    select 1 from pg_publication_tables
-    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'clientes'
-  ) then
-    alter publication supabase_realtime add table public.clientes;
-  end if;
-  if not exists (
-    select 1 from pg_publication_tables
-    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'movimientos'
-  ) then
-    alter publication supabase_realtime add table public.movimientos;
-  end if;
-  if not exists (
-    select 1 from pg_publication_tables
-    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'inventario_movs'
-  ) then
-    alter publication supabase_realtime add table public.inventario_movs;
-  end if;
+  foreach t in array array['productos','clientes','movimientos','inventario_movs','metodos_pago','settings'] loop
+    execute format('alter table public.%I enable row level security', t);
+    execute format('drop policy if exists %I on public.%I', t || '_all', t);
+    execute format('create policy %I on public.%I for all using (true) with check (true)', t || '_all', t);
+  end loop;
 end $$;
 
--- ============================================================
--- SEED inicial (mismos productos de ejemplo que tenía el panel local)
--- Se salta automáticamente si ya hay productos cargados.
--- ============================================================
+-- ---------- STORAGE (tolerante a fallos) ----------
+-- Si esto no se puede hacer por SQL, crea los buckets a mano en
+-- Storage -> New bucket, con los nombres "productos" y "qr", públicos.
+do $$
+begin
+  insert into storage.buckets (id, name, public) values ('productos','productos',true)
+    on conflict (id) do update set public = true;
+  insert into storage.buckets (id, name, public) values ('qr','qr',true)
+    on conflict (id) do update set public = true;
+exception when others then
+  raise notice 'Buckets: no se pudieron crear por SQL (%). Créalos a mano como públicos.', sqlerrm;
+end $$;
+
+do $$
+declare b text;
+begin
+  foreach b in array array['productos','qr'] loop
+    execute format('drop policy if exists %I on storage.objects', b || '_bucket_read');
+    execute format('create policy %I on storage.objects for select using (bucket_id = %L)', b || '_bucket_read', b);
+    execute format('drop policy if exists %I on storage.objects', b || '_bucket_write');
+    execute format('create policy %I on storage.objects for all using (bucket_id = %L) with check (bucket_id = %L)', b || '_bucket_write', b, b);
+  end loop;
+exception when others then
+  raise notice 'Políticas de Storage: %. Un bucket marcado como público ya permite leer las fotos.', sqlerrm;
+end $$;
+
+-- ---------- TIEMPO REAL ----------
+do $$
+declare t text;
+begin
+  foreach t in array array['productos','clientes','movimientos','inventario_movs'] loop
+    if not exists (
+      select 1 from pg_publication_tables
+      where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = t
+    ) then
+      execute format('alter publication supabase_realtime add table public.%I', t);
+    end if;
+  end loop;
+exception when others then
+  raise notice 'Tiempo real: %. La app igual funciona, sólo tarda en reflejar cambios de otro dispositivo.', sqlerrm;
+end $$;
+
+-- ---------- PRODUCTOS DE EJEMPLO (sólo si no hay ninguno) ----------
 insert into public.productos (code, nombre, precio, stock, categoria)
 select * from (values
   ('7751000000001','Soda',1.00,12,'Snacks'),
@@ -206,3 +179,21 @@ select * from (values
   ('7751000000011','Princesa',3.00,9,'Snacks')
 ) as v(code,nombre,precio,stock,categoria)
 where not exists (select 1 from public.productos);
+
+
+-- ---------- REFRESCAR EL CACHÉ DE LA API ----------
+-- La API guarda en memoria qué tablas existen. Si se creó una tabla y el
+-- caché no se refrescó, la web recibe "Could not find the table in the
+-- schema cache" aunque la tabla esté ahí.
+notify pgrst, 'reload schema';
+
+-- ---------- COMPROBACIÓN ----------
+-- Debe listar las 6 tablas, cada una con permiso abierto.
+select
+  t.table_name as tabla,
+  (select count(*) from pg_policies p
+    where p.schemaname = 'public' and p.tablename = t.table_name) as politicas
+from information_schema.tables t
+where t.table_schema = 'public'
+  and t.table_name in ('productos','clientes','movimientos','inventario_movs','metodos_pago','settings')
+order by t.table_name;
