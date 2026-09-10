@@ -390,11 +390,7 @@ main {
 
 /* ── SEARCH & TOOLS: teclado de pedido ── */
 .search-wrap {
-    position: sticky;
-    top: 0;
-    z-index: 50;
     padding: 0.75rem 0 0.5rem;
-    background: linear-gradient(to bottom, var(--cream) 78%, transparent);
     display: flex;
     flex-direction: column;
     gap: 0.5rem;

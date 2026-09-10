@@ -55,6 +55,21 @@
                 <strong id="live-count">4</strong>&nbsp;personas de la oficina están revisando el stock ahora mismo...
             </div>
 
+            <div class="search-wrap">
+                <div class="search-row">
+                    <input type="text" id="buscador" placeholder="Busca tu antojo favorito..." autocomplete="off" spellcheck="false">
+                    <button class="btn-random" onclick="elegirAlAzar()">🎰 Ruleta</button>
+                </div>
+            </div>
+
+            <div class="category-pills" id="category-pills"></div>
+
+            <span id="ultimo-update"></span>
+
+            <div id="tienda-container">
+                <p class="msg-loading">Cargando el carrito de antojos...</p>
+            </div>
+
             <div class="office-quote" id="random-quote">
                 ¿Estresado por sacar adelante ese pendiente? ¿Reuniones sin fin? El dulce cura el alma.
             </div>
@@ -100,21 +115,6 @@
                     En Safari toca <strong>Compartir</strong> (el ícono del cuadrado con la flecha) y luego
                     <strong>"Agregar a pantalla de inicio"</strong>. Así queda como una app, sin pasar por la App Store.
                 </div>
-            </div>
-
-            <div class="search-wrap">
-                <div class="search-row">
-                    <input type="text" id="buscador" placeholder="Busca tu antojo favorito..." autocomplete="off" spellcheck="false">
-                    <button class="btn-random" onclick="elegirAlAzar()">🎰 Ruleta</button>
-                </div>
-            </div>
-
-            <div class="category-pills" id="category-pills"></div>
-
-            <span id="ultimo-update"></span>
-
-            <div id="tienda-container">
-                <p class="msg-loading">Cargando el carrito de antojos...</p>
             </div>
         </main>
     </div>
