@@ -20,6 +20,9 @@ let lastScannedCode = null;
 let lastScanTime = 0;
 let audioCtx = null;
 let pendingImageFile = null;
+let pendingImagePreview = null;
+let rescanCtx = null;
+let currentEditCode = null;
 
 const $ = id => document.getElementById(id);
 const r2 = n => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
@@ -46,11 +49,19 @@ let modalStack = [];
 
 function openModal(id){
   if(id === 'modalAjustes') loadInvSettings();
-  $(id).classList.add('active');
+  const el = $(id);
+  if(!el) return;
+  el.classList.add('active');
+  const sheet = el.querySelector('.sheet');
+  if(sheet){ sheet.style.transition = ''; sheet.style.transform = ''; }
+  // Repintar la misma hoja (p.ej. pasar de "producto" a "editar producto")
+  // no debe apilar otra entrada: si no, el botón atrás pediría dos toques
+  // para cerrar una sola hoja.
+  if(modalStack[modalStack.length - 1] === id) return;
   modalStack.push(id);
   history.pushState({ gxModal: id }, '');
 }
-/** Cierra sólo la hoja de encima (botón atrás, tocar fuera, tocar la rayita). */
+/** Cierra sólo la hoja de encima (botón atrás, tocar fuera, rayita, deslizar). */
 function closeTopModal(){
   if(!modalStack.length) return;
   const id = modalStack.pop();
@@ -64,13 +75,65 @@ function closeModals(){
   document.querySelectorAll('.overlay.active').forEach(o => o.classList.remove('active'));
   if(n > 0) history.go(-n);
 }
+/** Único punto de salida: siempre por el historial, para que atrás y los gestos coincidan. */
+function dismissTopModal(){
+  if(modalStack.length) history.back();
+}
 window.addEventListener('popstate', () => { closeTopModal(); });
+
+/* ---- Cerrar tocando fuera, tocando la rayita, con Escape o deslizando ---- */
+let pressStartTarget = null;
+let sheetDrag = null;
+let swallowNextClick = false;
+
+const isInteractive = el => !!(el && el.closest('input, textarea, select, button, canvas, a, label, .crop-stage'));
+
+document.addEventListener('pointerdown', e => {
+  const t = e.target instanceof Element ? e.target : null;
+  pressStartTarget = t;
+  if(!t) return;
+  const sheet = t.closest('.sheet');
+  if(!sheet) return;
+  const onHandle = !!t.closest('.sheet-handle');
+  // Deslizar hacia abajo cierra: desde la rayita siempre, y desde el cuerpo
+  // sólo si la hoja está arriba del todo y no se tocó un control.
+  if(!onHandle && (sheet.scrollTop > 0 || isInteractive(t))) return;
+  sheetDrag = { sheet, startY: e.clientY, dy: 0 };
+}, true);
+
+document.addEventListener('pointermove', e => {
+  if(!sheetDrag) return;
+  const dy = e.clientY - sheetDrag.startY;
+  sheetDrag.dy = Math.max(0, dy);
+  sheetDrag.sheet.style.transition = 'none';
+  sheetDrag.sheet.style.transform = `translateY(${sheetDrag.dy}px)`;
+});
+
+function endSheetDrag(){
+  if(!sheetDrag) return;
+  const { sheet, dy } = sheetDrag;
+  sheetDrag = null;
+  sheet.style.transition = 'transform .2s ease';
+  sheet.style.transform = '';
+  if(dy > 80){ swallowNextClick = true; dismissTopModal(); }
+}
+document.addEventListener('pointerup', endSheetDrag);
+document.addEventListener('pointercancel', endSheetDrag);
+
 document.addEventListener('click', e => {
-  const t = e.target;
-  if(!t.classList) return;
-  if((t.classList.contains('overlay') && t.classList.contains('active')) || t.classList.contains('sheet-handle')){
-    history.back();
+  if(swallowNextClick){ swallowNextClick = false; return; }
+  const t = e.target instanceof Element ? e.target : null;
+  if(!t) return;
+  if(t.closest('.sheet-handle')){ dismissTopModal(); return; }
+  // Sólo cuenta como "toqué fuera" si el toque empezó y terminó en el fondo,
+  // para que arrastrar desde dentro de la hoja no la cierre por accidente.
+  if(t.classList.contains('overlay') && t.classList.contains('active') && pressStartTarget === t){
+    dismissTopModal();
   }
+});
+
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') dismissTopModal();
 });
 function errMsg(err){ return (err && err.message) ? err.message : 'Ocurrió un error'; }
 
@@ -632,6 +695,19 @@ async function handleScan(code){
 
   playAckSound(); vibrate();
 
+  // Si veníamos de "volver a escanear", el código nuevo reemplaza al anterior
+  // y se conserva todo lo que ya se había llenado en el formulario.
+  if(rescanCtx){
+    const ctx = rescanCtx; rescanCtx = null;
+    if(ctx.mode === 'edit'){
+      toast('Código reemplazado · guarda los cambios');
+      editProductFromSheet(ctx.originalCode, Object.assign({}, ctx.draft, { code }));
+    }else{
+      openProductSheet(code, ctx.draft);
+    }
+    return;
+  }
+
   const frame = $('scanFrame');
   frame.classList.remove('flash'); void frame.offsetWidth;
   frame.classList.add('flash');
@@ -646,7 +722,9 @@ async function handleScan(code){
 /* ---------- SHEET producto escaneado (crear / sumar stock) ---------- */
 function imgPreviewHTML(url){
   const placeholderIcon = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>';
-  return url ? `<img src="${esc(url)}">` : placeholderIcon;
+  // Una foto ya recortada pero sin guardar gana: sobrevive a "volver a escanear".
+  const src = pendingImagePreview || url;
+  return src ? `<img src="${esc(src)}">` : placeholderIcon;
 }
 function onProductImageFile(e){
   const f = e.target.files[0];
@@ -725,9 +803,10 @@ async function confirmCrop(){
   const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
   if(!blob) return toast('No se pudo procesar la foto');
   pendingImageFile = new File([blob], 'producto.jpg', { type: 'image/jpeg' });
+  pendingImagePreview = URL.createObjectURL(blob);
   const prev = $('imgPreview');
-  if(prev) prev.innerHTML = `<img src="${URL.createObjectURL(blob)}">`;
-  history.back(); // el popstate cierra sólo la hoja de recorte, la de producto sigue abierta
+  if(prev) prev.innerHTML = `<img src="${pendingImagePreview}">`;
+  dismissTopModal(); // cierra sólo la hoja de recorte, la de producto sigue abierta
 }
 async function uploadProductImage(file, code){
   const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
@@ -738,8 +817,9 @@ async function uploadProductImage(file, code){
   return data.publicUrl;
 }
 
-async function openProductSheet(code){
-  pendingImageFile = null;
+async function openProductSheet(code, draft){
+  if(!draft){ pendingImageFile = null; pendingImagePreview = null; }
+  const d = draft || {};
   const { data: existing } = await supabaseClient.from('productos').select('*').eq('code', code).maybeSingle();
   const content = $('sheetContent');
   if(existing){
@@ -785,8 +865,14 @@ async function openProductSheet(code){
       </div>
       <div class="field">
         <label>Código de barras</label>
-        <input type="text" id="newCode" value="${esc(code)}" inputmode="numeric">
-        <div class="hint">¿Se leyó mal? Corrígelo aquí o vuelve a escanear.</div>
+        <div class="code-edit">
+          <input type="text" id="newCode" value="${esc(code)}" inputmode="numeric">
+          <button class="btn btn-soft" type="button" onclick="rescan('new')" aria-label="Volver a escanear">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>
+            Reescanear
+          </button>
+        </div>
+        <div class="hint">¿Se leyó mal? Corrígelo aquí o reescanea: lo demás que llenaste se conserva.</div>
       </div>
       <div class="img-upload">
         <div class="preview" id="imgPreview">${imgPreviewHTML(null)}</div>
@@ -795,32 +881,49 @@ async function openProductSheet(code){
       </div>
       <div class="field">
         <label>Nombre del producto</label>
-        <input type="text" id="newName" placeholder="Ej: Sublime">
+        <input type="text" id="newName" placeholder="Ej: Sublime" value="${esc(d.nombre ?? '')}">
       </div>
       <div class="field-row">
-        <div class="field"><label>Precio (S/)</label><input type="number" id="newPrice" step="0.10" min="0" placeholder="0.00" inputmode="decimal"></div>
-        <div class="field"><label>Stock inicial</label><input type="number" id="newQty" value="1" min="1" inputmode="numeric"></div>
+        <div class="field"><label>Precio (S/)</label><input type="number" id="newPrice" step="0.10" min="0" placeholder="0.00" inputmode="decimal" value="${esc(d.precio ?? '')}"></div>
+        <div class="field"><label>Stock inicial</label><input type="number" id="newQty" min="1" inputmode="numeric" value="${esc(d.qty ?? 1)}"></div>
       </div>
-      <div class="field"><label>Categoría</label><input type="text" id="newCategoria" placeholder="Ej: Snacks, Bebidas…" value="General"></div>
+      <div class="field"><label>Categoría</label><input type="text" id="newCategoria" placeholder="Ej: Snacks, Bebidas…" value="${esc(d.categoria ?? 'General')}"></div>
       <button class="btn btn-fiado btn-full" onclick="createProduct()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
         Crear producto
       </button>
-      <button class="btn btn-ghost btn-full" style="margin-top:9px" onclick="rescan()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>
-        Volver a escanear
-      </button>
+      <button class="btn btn-ghost btn-full" style="margin-top:9px" onclick="closeModals()">Cancelar</button>
     `;
-    setTimeout(()=>{ const el=$('newName'); if(el) el.focus(); }, 350);
+    if(!draft) setTimeout(()=>{ const el=$('newName'); if(el) el.focus(); }, 350);
   }
   openModal('modalProducto');
 }
 
-/** Cierra la hoja de producto y reactiva la cámara para escanear otro código. */
-function rescan(){
+function readDraft(ids){
+  const out = {};
+  for(const key in ids){ const el = $(ids[key]); if(el) out[key] = el.value; }
+  return out;
+}
+
+/**
+ * Vuelve a la cámara. Sin argumento escanea un producto cualquiera; con
+ * 'new' o 'edit' el próximo código leído reemplaza al del formulario abierto
+ * y conserva lo que ya se había llenado (incluida la foto recortada).
+ */
+function rescan(mode){
+  if(mode === 'new'){
+    rescanCtx = { mode:'new', draft: readDraft({ nombre:'newName', precio:'newPrice', qty:'newQty', categoria:'newCategoria' }) };
+  }else if(mode === 'edit'){
+    rescanCtx = { mode:'edit', originalCode: currentEditCode,
+      draft: readDraft({ nombre:'editName', precio:'editPrice', stock:'editStock', categoria:'editCategoria' }) };
+  }else{
+    rescanCtx = null;
+    pendingImageFile = null; pendingImagePreview = null;
+  }
   lastScannedCode = null;
   closeModals();
   switchSubTab('scan');
+  if(mode) toast('Apunta al código nuevo');
 }
 
 async function createProduct(){
@@ -859,33 +962,46 @@ async function addStock(code){
   }catch(err){ toast('Error: ' + errMsg(err)); }
 }
 
-async function editProductFromSheet(code){
-  pendingImageFile = null;
+/** `code` es siempre el código con el que el producto está guardado hoy. */
+async function editProductFromSheet(code, draft){
+  if(!draft){ pendingImageFile = null; pendingImagePreview = null; }
+  const d = draft || {};
   const { data: p } = await supabaseClient.from('productos').select('*').eq('code', code).maybeSingle();
   if(!p) return;
+  currentEditCode = code;
   const content = $('sheetContent');
   content.innerHTML = `
     <div class="sheet-head-prod">
       <div style="flex:1">
-        <div class="code-chip"><span class="dot"></span>${esc(code)}</div>
         <div class="name">Editar producto</div>
-        <div class="stock-line">Cambia el nombre, precio, categoría o foto.</div>
+        <div class="stock-line">Cambia el código, nombre, precio, categoría o foto.</div>
       </div>
       <button class="icon-btn" onclick="closeModals()" aria-label="Cerrar">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>
       </button>
+    </div>
+    <div class="field">
+      <label>Código de barras</label>
+      <div class="code-edit">
+        <input type="text" id="editCode" value="${esc(d.code ?? code)}" inputmode="numeric">
+        <button class="btn btn-soft" type="button" onclick="rescan('edit')" aria-label="Volver a escanear">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>
+          Reescanear
+        </button>
+      </div>
+      <div class="hint">Escríbelo o reescanea para reemplazar el código de este producto.</div>
     </div>
     <div class="img-upload">
       <div class="preview" id="imgPreview">${imgPreviewHTML(p.imagen_url)}</div>
       <button class="btn btn-soft" type="button" onclick="document.getElementById('prodImgInput').click()">Cambiar foto</button>
       <input type="file" id="prodImgInput" accept="image/*" hidden onchange="onProductImageFile(event)">
     </div>
-    <div class="field"><label>Nombre</label><input type="text" id="editName" value="${esc(p.nombre)}"></div>
+    <div class="field"><label>Nombre</label><input type="text" id="editName" value="${esc(d.nombre ?? p.nombre)}"></div>
     <div class="field-row">
-      <div class="field"><label>Precio (S/)</label><input type="number" id="editPrice" step="0.10" min="0" value="${p.precio}" inputmode="decimal"></div>
-      <div class="field"><label>Stock</label><input type="number" id="editStock" min="0" value="${p.stock||0}" inputmode="numeric"></div>
+      <div class="field"><label>Precio (S/)</label><input type="number" id="editPrice" step="0.10" min="0" value="${esc(d.precio ?? p.precio)}" inputmode="decimal"></div>
+      <div class="field"><label>Stock</label><input type="number" id="editStock" min="0" value="${esc(d.stock ?? (p.stock||0))}" inputmode="numeric"></div>
     </div>
-    <div class="field"><label>Categoría</label><input type="text" id="editCategoria" value="${esc(p.categoria||'General')}"></div>
+    <div class="field"><label>Categoría</label><input type="text" id="editCategoria" value="${esc(d.categoria ?? (p.categoria||'General'))}"></div>
     <button class="btn btn-fiado btn-full" onclick="saveProductEdit('${esc(code)}')">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
       Guardar cambios
@@ -893,14 +1009,16 @@ async function editProductFromSheet(code){
     <button class="btn btn-danger btn-full" style="margin-top:9px" onclick="deleteProductFromSheet('${esc(code)}')">Eliminar producto</button>
   `;
   openModal('modalProducto');
-  setTimeout(()=>{ const el=$('editStock'); if(el) el.focus(); }, 350);
+  if(!draft) setTimeout(()=>{ const el=$('editStock'); if(el) el.focus(); }, 350);
 }
 
 async function saveProductEdit(code){
+  const nuevoCode = ($('editCode').value || '').trim();
   const nombre = $('editName').value.trim();
   const precio = r2($('editPrice').value);
   const stock = parseInt($('editStock').value);
   const categoria = ($('editCategoria').value || '').trim() || 'General';
+  if(!nuevoCode) return toast('Falta el código de barras');
   if(!nombre) return toast('Escribe un nombre');
   if(isNaN(precio) || precio < 0) return toast('Precio inválido');
   try{
@@ -908,7 +1026,12 @@ async function saveProductEdit(code){
     if(!p) return;
     const update = { nombre, precio, categoria };
     if(!isNaN(stock) && stock >= 0) update.stock = stock;
-    if(pendingImageFile) update.imagen_url = await uploadProductImage(pendingImageFile, code);
+    if(nuevoCode !== code){
+      const { data: dup } = await supabaseClient.from('productos').select('id').eq('code', nuevoCode).maybeSingle();
+      if(dup) return toast('Ya hay otro producto con ese código');
+      update.code = nuevoCode;
+    }
+    if(pendingImageFile) update.imagen_url = await uploadProductImage(pendingImageFile, nuevoCode);
     const { error } = await supabaseClient.from('productos').update(update).eq('id', p.id);
     if(error) throw error;
     closeModals(); toast('Producto actualizado');
