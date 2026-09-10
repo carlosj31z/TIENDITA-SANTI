@@ -558,6 +558,7 @@ main {
 .empty-state { text-align: center; padding: 56px 20px; color: var(--ink-3); }
 .empty-state .emoji { font-size: 2.4rem; display: block; margin-bottom: 10px; }
 .empty-state strong { display: block; font-size: 1.05rem; color: var(--ink); margin-bottom: 4px; }
+.btn-retry { display: block; margin: 14px auto 0; padding: 11px 22px; border: none; border-radius: 99px; background: var(--magenta); color: #fff; font-family: inherit; font-size: .92rem; font-weight: 700; cursor: pointer; }
 
 .skeleton-row { height: 26px; width: 42%; border-radius: 8px; background: #E9E7ED; margin-bottom: 14px; }
 .skeleton-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
