@@ -610,6 +610,17 @@ supabaseClient
     .subscribe();
 
 if ('serviceWorker' in navigator) {
+    // Si ya había un service worker controlando la página y llega uno nuevo,
+    // se recarga sola: así un despliegue se ve al instante sin que nadie
+    // tenga que limpiar la caché a mano.
+    const yaHabiaControlador = !!navigator.serviceWorker.controller;
+    let recargando = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!yaHabiaControlador || recargando) return;
+        recargando = true;
+        location.reload();
+    });
+
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js').catch(err => console.error('SW error:', err));
     });
