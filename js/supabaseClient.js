@@ -1,7 +1,11 @@
 // Cliente compartido de Supabase para la tiendita y el panel admin.
-// Solo la clave "anon" (pública) va aquí. La "service_role" nunca
-// debe usarse en código que corre en el navegador.
+//
+// Va la clave PUBLICABLE, la que Supabase diseñó para vivir a la vista en
+// el navegador. Este proyecto tiene desactivadas las claves antiguas
+// ("anon", las que empiezan con eyJ): responden "Invalid API key".
+// La clave secreta (service_role / secret) nunca debe aparecer aquí:
+// cualquiera podría leerla desde el código de la página.
 const SUPABASE_URL = "https://pupjkwkneuczqpjrmuxt.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1cGprd2tuZXVjenFwanJtdXh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkwMjU0ODMsImV4cCI6MjEwNDYwMTQ4M30.k1Q1z2xswXBfsBql3puNmOQdOMAuzTzRY5o2Aawp_WU";
+const SUPABASE_PUBLIC_KEY = "sb_publishable_m5SR2Jch-F_rRM2CbkOd6w_m635N1lf";
 
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLIC_KEY);
