@@ -23,7 +23,7 @@ body{ font-family:'Plus Jakarta Sans',sans-serif; background:var(--bg); color:va
 /* ============ HEADER ============ */
 .appbar{ padding:26px 22px 8px; display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
 .brand{ display:inline-flex; align-items:flex-start; gap:2px; color:var(--magenta); line-height:1; }
-.brand-img{ height:22px; width:auto; }
+.brand-img{ width:min(58vw,196px); height:auto; }
 .brand-text{ display:inline-flex; align-items:flex-start; gap:2px; }
 .brand-word{ font-family:'Archivo Black','Arial Black','Helvetica Neue',system-ui,sans-serif; font-size:21px; letter-spacing:-.035em; transform:skewX(-10deg); transform-origin:left bottom; display:inline-block; }
 .brand-plus{ font-family:'Plus Jakarta Sans',sans-serif; font-weight:800; font-size:.62em; color:#fff; background:var(--magenta); border-radius:5px; width:1.15em; height:1.15em; display:inline-flex; align-items:center; justify-content:center; margin-top:-.15em; flex-shrink:0; }

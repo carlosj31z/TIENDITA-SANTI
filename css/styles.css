@@ -71,8 +71,11 @@ img { max-width: 100%; display: block; }
     line-height: 1;
     flex-shrink: 0;
 }
-.brand-img { height: clamp(20px, 5.6vw, 27px); width: auto; }
-.brand-footer .brand-img { height: 24px; }
+/* El wordmark es muy ancho y bajo (≈6.4:1). Fijarle la altura lo deja
+   ilegible, así que se dimensiona por ancho: ocupa el espacio que le
+   deja la fila de íconos. */
+.brand-img { width: clamp(172px, 52vw, 268px); height: auto; }
+.brand-footer .brand-img { width: clamp(180px, 56vw, 230px); }
 .brand-text { display: inline-flex; align-items: flex-start; gap: 2px; }
 .brand-word {
     font-family: 'Archivo Black', 'Arial Black', 'Helvetica Neue', system-ui, sans-serif;
