@@ -763,8 +763,10 @@ function drawCrop(){
   const canvas = $('cropCanvas');
   canvas.width = CROP_SIZE; canvas.height = CROP_SIZE;
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#F7F4F8';
-  ctx.fillRect(0, 0, CROP_SIZE, CROP_SIZE);
+  // Sin relleno: si el PNG del producto tiene transparencia (fondo o
+  // huecos internos), debe seguir transparente en el recorte. Antes se
+  // pintaba un fondo sólido detrás, así que esas zonas quedaban opacas.
+  ctx.clearRect(0, 0, CROP_SIZE, CROP_SIZE);
   const w = cropImage.width * cropScale;
   const h = cropImage.height * cropScale;
   const x = (CROP_SIZE - w) / 2 + cropOffsetX;
@@ -800,9 +802,11 @@ function cropPointerUp(){ cropDragging = false; }
 
 async function confirmCrop(){
   const canvas = $('cropCanvas');
-  const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+  // PNG, no JPEG: JPEG no tiene canal alfa y convierte cualquier
+  // transparencia en un fondo blanco sólido al exportar.
+  const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
   if(!blob) return toast('No se pudo procesar la foto');
-  pendingImageFile = new File([blob], 'producto.jpg', { type: 'image/jpeg' });
+  pendingImageFile = new File([blob], 'producto.png', { type: 'image/png' });
   pendingImagePreview = URL.createObjectURL(blob);
   const prev = $('imgPreview');
   if(prev) prev.innerHTML = `<img src="${pendingImagePreview}">`;
