@@ -314,7 +314,7 @@ async function cargarStock() {
     } catch (err) {
         console.error('Error al cargar el stock:', err);
         if (productos.length === 0) {
-            $('tienda-container').innerHTML = `<div class="empty-state"><span class="emoji">📡</span><strong>No pudimos leer el stock</strong>Reintentando en un momento…</div>`;
+            $('tienda-container').innerHTML = `<div class="empty-state"><span class="emoji">📡</span><strong>No pudimos leer el stock</strong>Revisa tu conexión.<button class="btn-retry" onclick="cargarStock()">Reintentar</button></div>`;
         }
     }
 }
@@ -602,7 +602,13 @@ setInterval(() => {
 }, 6000);
 
 cargarStock();
-setInterval(cargarStock, 60000);
+
+// Realtime ya avisa de cada cambio, así que este sondeo es sólo una red de
+// seguridad por si el websocket se cae. Antes corría cada minuto incluso con
+// la pestaña o la app en segundo plano: cada dispositivo abierto le mandaba
+// ~1440 consultas diarias a la base sin que nadie estuviera mirando.
+setInterval(() => { if (!document.hidden) cargarStock(); }, 5 * 60 * 1000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) cargarStock(); });
 
 supabaseClient
     .channel('tienda-sync')
