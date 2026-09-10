@@ -8,7 +8,7 @@ const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const OUT = path.join(ROOT, 'www');
 
-const ITEMS = ['index.html', 'css', 'js', 'manifest.json', 'sw.js', 'icons', 'brand'];
+const ITEMS = ['index.html', 'css', 'js', 'manifest.json', 'sw.js', 'icons'];
 
 function copyRecursive(src, dest) {
   const stat = fs.statSync(src);
@@ -31,4 +31,13 @@ for (const item of ITEMS) {
   copyRecursive(src, path.join(OUT, item));
 }
 
-console.log('www/ generado con:', ITEMS.join(', '));
+// Del directorio brand/ sólo viaja el logo que la página realmente usa: el
+// original de edición y los masters del ícono pesan más de 1 MB y no tienen
+// nada que hacer dentro del paquete que se descarga.
+const logo = path.join(ROOT, 'brand', 'logo.png');
+if (fs.existsSync(logo)) {
+  fs.mkdirSync(path.join(OUT, 'brand'), { recursive: true });
+  fs.copyFileSync(logo, path.join(OUT, 'brand', 'logo.png'));
+}
+
+console.log('www/ generado con:', ITEMS.join(', '), '+ brand/logo.png');

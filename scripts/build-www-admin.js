@@ -28,8 +28,14 @@ copyRecursive(path.join(ROOT, 'admin', 'js'), path.join(OUT, 'js'));
 fs.mkdirSync(path.join(OUT, 'js'), { recursive: true });
 fs.copyFileSync(path.join(ROOT, 'js', 'supabaseClient.js'), path.join(OUT, 'js', 'supabaseClient.js'));
 
-const brand = path.join(ROOT, 'brand');
-if (fs.existsSync(brand)) copyRecursive(brand, path.join(OUT, 'brand'));
+// Del directorio brand/ sólo viaja el logo que la página realmente usa: el
+// original de edición y los masters del ícono pesan más de 1 MB y no tienen
+// nada que hacer dentro del paquete que se descarga.
+const logo = path.join(ROOT, 'brand', 'logo.png');
+if (fs.existsSync(logo)) {
+  fs.mkdirSync(path.join(OUT, 'brand'), { recursive: true });
+  fs.copyFileSync(logo, path.join(OUT, 'brand', 'logo.png'));
+}
 
 let html = fs.readFileSync(path.join(ROOT, 'admin', 'index.html'), 'utf8');
 // En admin/ los recursos compartidos viven un nivel arriba; dentro del
