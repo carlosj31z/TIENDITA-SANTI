@@ -1,0 +1,30 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# www/ se regenera con `npm run build` (node scripts/build-www.js)
+www/
+
+# Android build outputs
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+android/captures/
+android/app/release/
+
+# iOS build outputs
+ios/App/build/
+ios/App/Pods/
+ios/App/App.xcworkspace/xcuserdata/
+ios/App/App.xcodeproj/xcuserdata/
+ios/App/App.xcodeproj/project.xcworkspace/xcuserdata/
+ios/DerivedData/
+
+# Capacitor copies the web build into the native projects; no need to
+# double-track those generated copies in git.
+android/app/src/main/assets/public/
+ios/App/App/public/
+
+# OS/editor
+.DS_Store

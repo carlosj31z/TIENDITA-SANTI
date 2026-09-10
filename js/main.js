@@ -1,6 +1,7 @@
 const TELEFONO_DELIVERY = "51972898388";
 
 let productos = [];
+let currentCategoria = 'Todos';
 
 const frasesOficina = [
     "¿Estresado por sacar adelante ese pendiente? ¿Reuniones sin fin? El dulce cura el alma.",
@@ -46,7 +47,8 @@ async function cargarStock() {
             categoria: p.categoria || 'General'
         }));
 
-        renderizarProductos(productos);
+        renderCategoriaPills();
+        renderizarProductos(filtrarPorCategoriaYBusqueda());
         mostrarAntojoDelDia();
         const ahora = new Date();
         document.getElementById('ultimo-update').textContent = "Actualizado: " + ahora.toLocaleTimeString('es-PE');
@@ -59,6 +61,93 @@ async function cargarStock() {
     }
 }
 
+function filtrarPorCategoriaYBusqueda() {
+    const term = (document.getElementById('buscador').value || '').toLowerCase();
+    return productos.filter(p => {
+        const coincideCategoria = currentCategoria === 'Todos' || p.categoria === currentCategoria;
+        const coincideBusqueda = p.nombre.toLowerCase().includes(term);
+        return coincideCategoria && coincideBusqueda;
+    });
+}
+
+function renderCategoriaPills() {
+    const wrap = document.getElementById('category-pills');
+    const categorias = Array.from(new Set(productos.map(p => p.categoria))).sort((a, b) => {
+        if (a === 'General') return 1;
+        if (b === 'General') return -1;
+        return a.localeCompare(b);
+    });
+
+    if (categorias.length <= 1) { wrap.innerHTML = ''; return; }
+
+    const todas = ['Todos', ...categorias];
+    wrap.innerHTML = todas.map(cat => {
+        const activo = cat === currentCategoria ? ' active' : '';
+        return `<button type="button" class="pill-cat${activo}" data-cat="${cat.replace(/"/g, '&quot;')}">${cat}</button>`;
+    }).join('');
+
+    wrap.querySelectorAll('.pill-cat').forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentCategoria = btn.getAttribute('data-cat');
+            renderCategoriaPills();
+            renderizarProductos(filtrarPorCategoriaYBusqueda());
+        });
+    });
+}
+
+function placeholderIconSVG() {
+    return '<svg class="placeholder-icon" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>';
+}
+
+function crearTarjetaProducto(prod, indexGlobal) {
+    const agotado = prod.stock <= 0;
+    const pocoStock = prod.stock > 0 && prod.stock <= 3;
+
+    const card = document.createElement(agotado ? 'div' : 'a');
+    card.className = "card " + (agotado ? "card-agotado" : "card-disponible");
+    card.setAttribute('data-id', prod.id);
+
+    if (!agotado) {
+        card.href = armarMensajeWhatsapp(prod);
+        card.target = "_blank";
+    }
+
+    let barraClase = "";
+    let anchoBarra = Math.min(100, Math.round((prod.stock / 10) * 100));
+    if (prod.stock > 0 && prod.stock <= 3) barraClase = "low";
+    else if (prod.stock > 3 && prod.stock <= 6) barraClase = "mid";
+
+    let stockText = `Stock: <strong>${prod.stock}</strong> un.`;
+    if (pocoStock) {
+        stockText = `<span class="stock-urgente">¡VUELA! quedan ${prod.stock}</span>`;
+    }
+
+    const mediaContent = prod.imagen
+        ? `<img src="${prod.imagen}" alt="${prod.nombre}" loading="lazy">`
+        : placeholderIconSVG();
+
+    card.innerHTML =
+        '<div class="card-media">' +
+            '<span class="slot-code">' + generarCodigoSlot(indexGlobal) + '</span>' +
+            (agotado ? '<span class="stamp-agotado">AGOTADO</span>' : '') +
+            mediaContent +
+        '</div>' +
+        '<div class="card-body">' +
+            '<div class="card-name">' + prod.nombre + '</div>' +
+            '<div class="card-price-row">' +
+                '<span class="card-price">S/ ' + prod.precio + '</span>' +
+                (agotado
+                    ? '<span class="badge-agotado">Agotado</span>'
+                    : '<span class="card-add-btn">+</span>') +
+            '</div>' +
+            (agotado ? '' :
+                '<div class="stock-bar-wrap"><div class="stock-bar-fill ' + barraClase + '" style="width:' + anchoBarra + '%"></div></div>'
+            ) +
+            '<span class="card-stock">' + stockText + '</span>' +
+        '</div>';
+    return card;
+}
+
 function renderizarProductos(lista) {
     const container = document.getElementById('tienda-container');
     container.innerHTML = "";
@@ -68,46 +157,35 @@ function renderizarProductos(lista) {
         return;
     }
 
-    lista.forEach((prod, index) => {
-        const agotado = prod.stock <= 0;
-        const pocoStock = prod.stock > 0 && prod.stock <= 3;
+    const buscando = (document.getElementById('buscador').value || '').trim() !== '';
 
-        const card = document.createElement(agotado ? 'div' : 'a');
-        card.className = "card " + (agotado ? "card-agotado" : "card-disponible");
-        card.setAttribute('data-id', prod.id);
+    if (buscando || currentCategoria !== 'Todos') {
+        const grid = document.createElement('div');
+        grid.className = 'product-grid';
+        lista.forEach(prod => {
+            grid.appendChild(crearTarjetaProducto(prod, productos.indexOf(prod)));
+        });
+        container.appendChild(grid);
+        return;
+    }
 
-        if (!agotado) {
-            card.href = armarMensajeWhatsapp(prod);
-            card.target = "_blank";
-        }
+    const categorias = Array.from(new Set(lista.map(p => p.categoria))).sort((a, b) => {
+        if (a === 'General') return 1;
+        if (b === 'General') return -1;
+        return a.localeCompare(b);
+    });
 
-        let barraClase = "";
-        let anchoBarra = Math.min(100, Math.round((prod.stock / 10) * 100));
-        if (prod.stock > 0 && prod.stock <= 3) barraClase = "low";
-        else if (prod.stock > 3 && prod.stock <= 6) barraClase = "mid";
-
-        let stockText = `Stock: <strong>${prod.stock}</strong> un.`;
-        if (pocoStock) {
-            stockText = `<span class="stock-urgente">¡VUELA! quedan ${prod.stock}</span>`;
-        }
-
-        card.innerHTML =
-            '<span class="slot-code">' + generarCodigoSlot(index) + '</span>' +
-            (agotado ? '<span class="stamp-agotado">AGOTADO</span>' : '') +
-            '<div>' +
-                '<div class="card-name">' + prod.nombre + '</div>' +
-                '<div class="card-price">S/ ' + prod.precio + '</div>' +
-            '</div>' +
-            '<div class="card-footer">' +
-                '<span class="badge ' + (agotado ? 'badge-no' : 'badge-si') + '">' +
-                    (agotado ? 'Agotado' : '¡Pedir aquí!') +
-                '</span>' +
-                (agotado ? '' :
-                    '<div class="stock-bar-wrap"><div class="stock-bar-fill ' + barraClase + '" style="width:' + anchoBarra + '%"></div></div>'
-                ) +
-                '<span class="card-stock">' + stockText + '</span>' +
-            '</div>';
-        container.appendChild(card);
+    categorias.forEach(cat => {
+        const section = document.createElement('div');
+        section.className = 'category-section';
+        section.innerHTML = `<div class="category-section-title">${cat}</div>`;
+        const grid = document.createElement('div');
+        grid.className = 'product-grid';
+        lista.filter(p => p.categoria === cat).forEach(prod => {
+            grid.appendChild(crearTarjetaProducto(prod, productos.indexOf(prod)));
+        });
+        section.appendChild(grid);
+        container.appendChild(section);
     });
 }
 
@@ -127,6 +205,10 @@ function mostrarAntojoDelDia() {
 
 function irAlAntojoDelDia() {
     const id = document.getElementById('antojo-dia').dataset.id;
+    currentCategoria = 'Todos';
+    document.getElementById('buscador').value = '';
+    renderCategoriaPills();
+    renderizarProductos(filtrarPorCategoriaYBusqueda());
     const tarjeta = document.querySelector('.card[data-id="' + id + '"]');
     if (tarjeta) {
         tarjeta.classList.add('card-highlight');
@@ -140,7 +222,9 @@ function elegirAlAzar() {
     if (disponibles.length === 0) return;
 
     document.getElementById('buscador').value = "";
-    renderizarProductos(productos);
+    currentCategoria = 'Todos';
+    renderCategoriaPills();
+    renderizarProductos(filtrarPorCategoriaYBusqueda());
 
     let pasadas = 0;
     const totalPasadas = 14;
@@ -207,9 +291,8 @@ function lanzarConfeti(rect) {
     }
 }
 
-document.getElementById('buscador').addEventListener('input', function(e) {
-    const term = e.target.value.toLowerCase();
-    renderizarProductos(productos.filter(p => p.nombre.toLowerCase().includes(term)));
+document.getElementById('buscador').addEventListener('input', function() {
+    renderizarProductos(filtrarPorCategoriaYBusqueda());
 });
 
 cargarStock();

@@ -86,12 +86,30 @@
                 </div>
             </div>
 
+            <div class="app-banner">
+                <div class="app-banner-title">📲 Llévate GIANNEXPRESS a tu celular</div>
+                <div class="app-banner-actions">
+                    <a class="app-banner-btn" href="https://github.com/carlosj31z/TIENDITA-SANTI/releases/download/android-latest/giannexpress.apk">
+                        Descargar para Android
+                    </a>
+                    <button type="button" class="app-banner-btn app-banner-btn-ghost" onclick="document.getElementById('ios-instrucciones').classList.toggle('activo')">
+                        Instalar en iPhone
+                    </button>
+                </div>
+                <div class="app-banner-ios" id="ios-instrucciones">
+                    En Safari toca <strong>Compartir</strong> (el ícono del cuadrado con la flecha) y luego
+                    <strong>"Agregar a pantalla de inicio"</strong>. Así queda como una app, sin pasar por la App Store.
+                </div>
+            </div>
+
             <div class="search-wrap">
                 <div class="search-row">
                     <input type="text" id="buscador" placeholder="Busca tu antojo favorito..." autocomplete="off" spellcheck="false">
                     <button class="btn-random" onclick="elegirAlAzar()">🎰 Ruleta</button>
                 </div>
             </div>
+
+            <div class="category-pills" id="category-pills"></div>
 
             <span id="ultimo-update"></span>
 
