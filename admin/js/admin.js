@@ -24,6 +24,7 @@ let pendingImagePreview = null;
 let rescanCtx = null;
 let currentEditCode = null;
 
+const TRASH_ICON = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6.5 7l1 13h9l1-13"/></svg>';
 const $ = id => document.getElementById(id);
 const r2 = n => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
 const fmt = n => 'S/ ' + Math.abs(Number(n || 0)).toFixed(2);
@@ -168,12 +169,11 @@ async function metodosPago(){
 }
 async function renderMetodos(){
   const met = await metodosPago();
-  const trash = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6.5 7l1 13h9l1-13"/></svg>';
   const admin = $('metodosAdmin');
   if(admin){
     admin.innerHTML = met.length ? '' : '<p style="font-size:13px;color:var(--ink-3);margin-bottom:10px">Aún no agregas números de cobro.</p>';
     met.forEach(m=>{
-      admin.innerHTML += `<div class="metodo-row"><span><span class="sis">${esc(m.sistema)}</span> · ${esc(m.numero)}</span><button class="icon-btn" style="background:var(--rojo-bg);color:var(--rojo)" onclick="deleteMetodo(${m.id})" aria-label="Eliminar">${trash}</button></div>`;
+      admin.innerHTML += `<div class="metodo-row"><span><span class="sis">${esc(m.sistema)}</span> · ${esc(m.numero)}</span><button class="icon-btn" style="background:var(--rojo-bg);color:var(--rojo)" onclick="deleteMetodo(${m.id})" aria-label="Eliminar">${TRASH_ICON}</button></div>`;
     });
   }
   const lista = $('metodosLista');
@@ -371,7 +371,13 @@ async function renderClientDetail(id){
     div.innerHTML = `
       <div class="tl-dot"></div>
       <div class="tl-card">
-        <div class="tl-head"><span class="tl-type">${esVenta?'Fiado':'Pago'}</span><span class="tl-date">${fecha}</span></div>
+        <div class="tl-head">
+          <span class="tl-type">${esVenta?'Fiado':'Pago'}</span>
+          <span class="tl-head-right">
+            <span class="tl-date">${fecha}</span>
+            <button class="tl-del" onclick="deleteMovimiento(${m.id})" aria-label="Eliminar movimiento">${TRASH_ICON}</button>
+          </span>
+        </div>
         <div class="tl-desc">${esc(m.descripcion || (esVenta?'Venta fiada':'Pago recibido'))}</div>
         <div class="tl-foot">
           <span class="tl-amount">${esVenta?'+':'−'} ${fmt(m.monto)}</span>
@@ -380,6 +386,61 @@ async function renderClientDetail(id){
       </div>`;
     box.appendChild(div);
   });
+}
+
+/**
+ * Recalcula desde cero el saldo del cliente y el "saldo_resultante" que
+ * cada movimiento tiene guardado, recorriendo su historial en orden.
+ * Se usa tras borrar un movimiento: como el saldo de cada fila se
+ * calculó en su momento sumando/restando sobre el anterior, borrar uno
+ * de en medio deja mal todos los que quedaron después si no se rehace
+ * la cadena completa.
+ */
+async function recalcularSaldos(clienteId){
+  const { data: movs } = await supabaseClient.from('movimientos').select('*').eq('cliente_id', clienteId).order('fecha', { ascending:true });
+  let saldo = 0;
+  for(const m of (movs||[])){
+    saldo = m.tipo === 'VENTA' ? r2(saldo + Number(m.monto)) : r2(saldo - Number(m.monto));
+    if(r2(m.saldo_resultante) !== saldo){
+      await supabaseClient.from('movimientos').update({ saldo_resultante: saldo }).eq('id', m.id);
+    }
+  }
+  await supabaseClient.from('clientes').update({ saldo_actual: saldo }).eq('id', clienteId);
+}
+
+/**
+ * Borra un fiado o un pago marcado por error. Repone el saldo del
+ * cliente y, si era un fiado, el stock que se había descontado — sin
+ * esto el producto quedaría "vendido" para siempre sin que nadie lo
+ * deba. El balance de caja no necesita tocarse aparte: se calcula en
+ * vivo sumando movimientos, así que al desaparecer la fila el error
+ * deja de contar solo.
+ */
+async function deleteMovimiento(movId){
+  const { data: m } = await supabaseClient.from('movimientos').select('*').eq('id', movId).maybeSingle();
+  if(!m) return;
+  const esVenta = m.tipo === 'VENTA';
+  const aviso = esVenta
+    ? `¿Eliminar este fiado de ${fmt(m.monto)}? Se descuenta del saldo del cliente y se repone el stock vendido. Esta acción no se puede deshacer.`
+    : `¿Eliminar este pago de ${fmt(m.monto)}? Vuelve a sumarse al saldo del cliente. Esta acción no se puede deshacer.`;
+  if(!confirm(aviso)) return;
+  try{
+    if(esVenta && Array.isArray(m.items)){
+      for(const it of m.items){
+        const { data: candidatos } = await supabaseClient.from('productos').select('*').eq('nombre', it.nombre).limit(1);
+        const p = candidatos && candidatos[0];
+        if(p){
+          await supabaseClient.from('productos').update({ stock: (p.stock||0) + it.cantidad }).eq('id', p.id);
+          await supabaseClient.from('inventario_movs').insert({ code: p.code, nombre: p.nombre, cantidad: it.cantidad, tipo: 'restock' });
+        }
+      }
+    }
+    const { error } = await supabaseClient.from('movimientos').delete().eq('id', m.id);
+    if(error) throw error;
+    await recalcularSaldos(m.cliente_id);
+    toast(esVenta ? 'Fiado eliminado · saldo y stock corregidos' : 'Pago eliminado · saldo corregido');
+    renderClientDetail(m.cliente_id); renderCobros(); renderScanHero();
+  }catch(err){ toast('Error al eliminar: ' + errMsg(err)); }
 }
 
 /* ---------- DEUDA POR PRODUCTO (FIFO) ---------- */
