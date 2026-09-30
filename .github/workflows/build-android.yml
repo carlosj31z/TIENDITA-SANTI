@@ -49,6 +49,12 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # Sin esto, versiones viejas de esta acción piden de fábrica el
+          # paquete "tools", que Google retiró del repositorio del SDK
+          # hace tiempo: sdkmanager falla al no encontrarlo y tumba todo
+          # el build. platform-tools es lo único que este flujo necesita.
+          packages: platform-tools
 
       - name: Build debug APK
         working-directory: android
