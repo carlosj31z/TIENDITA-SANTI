@@ -248,9 +248,12 @@ main{ padding:8px 22px 150px; }
 .tl-client.venta .tl-dot{ background:var(--caramel); } .tl-client.pago .tl-dot{ background:var(--verde); }
 .tl-card{ background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:14px 16px; box-shadow:var(--shadow-sm); }
 .tl-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+.tl-head-right{ display:flex; align-items:center; gap:8px; }
 .tl-type{ font-size:12px; font-weight:800; letter-spacing:.4px; text-transform:uppercase; }
 .tl-client.venta .tl-type{ color:var(--caramel); } .tl-client.pago .tl-type{ color:var(--verde); }
 .tl-date{ font-size:11.5px; color:var(--ink-3); }
+.tl-del{ width:26px; height:26px; border-radius:9px; border:none; background:transparent; color:var(--ink-3); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition:transform .12s, color .12s, background .12s; }
+.tl-del:active{ transform:scale(.88); background:var(--rojo-bg); color:var(--rojo); }
 .tl-desc{ font-size:13.5px; color:var(--ink-2); white-space:pre-line; line-height:1.5; }
 .tl-foot{ display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:10px; border-top:1px dashed var(--line); }
 .tl-amount{ font-family:'Fraunces',serif; font-size:17px; font-weight:600; }
